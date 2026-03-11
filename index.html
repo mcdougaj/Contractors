@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contractor Check-In</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.5;
+            padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            background: #1a5632;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .header h1 { font-size: 1.3rem; margin-bottom: 4px; }
+        .header .site-name { font-size: 1.1rem; opacity: 0.9; }
+        .section {
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .section-title {
+            padding: 14px 16px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a5632;
+            border-bottom: 1px solid #eee;
+        }
+        details {
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        summary {
+            padding: 14px 16px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a5632;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 48px;
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary::after {
+            content: '\25BC';
+            font-size: 0.7rem;
+            transition: transform 0.2s;
+            color: #999;
+        }
+        details[open] summary::after { transform: rotate(180deg); }
+        details[open] summary { border-bottom: 1px solid #eee; }
+        .detail-content {
+            padding: 12px 16px;
+            font-size: 0.9rem;
+        }
+        .detail-content ul {
+            list-style: none;
+            padding: 0;
+        }
+        .detail-content li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            padding-left: 20px;
+            position: relative;
+        }
+        .detail-content li:last-child { border-bottom: none; }
+        .detail-content li::before {
+            content: '\2022';
+            color: #1a5632;
+            font-weight: bold;
+            position: absolute;
+            left: 4px;
+        }
+        .site-content {
+            padding: 16px;
+            font-size: 0.9rem;
+        }
+        .site-content h3 {
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            color: #1a5632;
+        }
+        .site-content ul {
+            padding-left: 20px;
+            margin-bottom: 12px;
+        }
+        .site-content li { padding: 4px 0; }
+        .form-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            -webkit-appearance: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: #1a5632;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            margin-top: 2px;
+            accent-color: #1a5632;
+            cursor: pointer;
+        }
+        .checkbox-group label {
+            font-size: 0.9rem;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: #1a5632;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 52px;
+            transition: background 0.2s;
+        }
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .submit-btn:active:not(:disabled) {
+            background: #0f3d20;
+        }
+        .success-msg {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .success-msg .check { font-size: 3rem; margin-bottom: 12px; }
+        .success-msg h2 { color: #1a5632; margin-bottom: 8px; }
+        .success-msg p { color: #666; }
+        .hotline {
+            text-align: center;
+            padding: 12px;
+            font-size: 0.8rem;
+            color: #999;
+        }
+        .hotline a { color: #1a5632; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Contractor Check-In</h1>
+    <div class="site-name" id="siteName">Loading site...</div>
+</div>
+
+<!-- SITE-SPECIFIC SAFETY CONTENT -->
+<div class="section" id="siteRules">
+    <div class="section-title">Site Safety Requirements</div>
+    <div class="site-content" id="siteContent">
+        <!-- Populated by JS based on ?site= parameter -->
+    </div>
+</div>
+
+<!-- SUPPLIER CODE OF CONDUCT - COLLAPSIBLE SECTIONS -->
+<details>
+    <summary>Safety Requirements</summary>
+    <div class="detail-content">
+        <ul>
+            <li>Complete all required training before entering any facility</li>
+            <li>Maintain required certifications for on-site work</li>
+            <li>Adhere to all site safety procedures at all times</li>
+            <li>Personal protective equipment (PPE) must be worn as posted</li>
+        </ul>
+    </div>
+</details>
+
+<details>
+    <summary>Environmental / Sustainability</summary>
+    <div class="detail-content">
+        <ul>
+            <li>Comply with all environmental laws and regulations</li>
+            <li>Conduct activities to protect surrounding communities</li>
+            <li>Follow site-specific environmental rules displayed above</li>
+            <li>Report any spills or environmental incidents immediately</li>
+        </ul>
+    </div>
+</details>
+
+<details>
+    <summary>Integrity & Compliance</summary>
+    <div class="detail-content">
+        <ul>
+            <li>Zero tolerance for corruption, bribery, or improper payments</li>
+            <li>No gifts or entertainment to company employees in connection with contract work (gifts under $50 nominal value only)</li>
+            <li>Comply with all applicable laws, rules, and regulations</li>
+            <li>Support fair competition and antitrust compliance</li>
+        </ul>
+    </div>
+</details>
+
+<details>
+    <summary>Workplace Conduct</summary>
+    <div class="detail-content">
+        <ul>
+            <li>Zero tolerance for violence &mdash; no weapons on premises</li>
+            <li>Respect diversity, equal opportunity, and nondiscrimination</li>
+            <li>No child labor, human trafficking, or labor law violations</li>
+            <li>Treat all workers with dignity and respect</li>
+        </ul>
+    </div>
+</details>
+
+<details>
+    <summary>Confidentiality</summary>
+    <div class="detail-content">
+        <ul>
+            <li>Safeguard any confidential information with utmost care</li>
+            <li>Immediately report any inadvertent disclosure</li>
+            <li>Maintain accurate records related to work performed</li>
+        </ul>
+    </div>
+</details>
+
+<details>
+    <summary>Reporting Violations</summary>
+    <div class="detail-content">
+        <ul>
+            <li>Report any witnessed or suspected wrongdoing</li>
+            <li>No retaliation for good-faith reporting</li>
+            <li>Contact your procurement representative or operations management</li>
+            <li>Ethics hotline: <a href="tel:8005550199">(800) 555-0199</a></li>
+            <li>Online: <a href="https://acmecompany.ethicspoint.com" target="_blank">acmecompany.ethicspoint.com</a></li>
+        </ul>
+    </div>
+</details>
+
+<!-- ACKNOWLEDGMENT FORM -->
+<div class="form-section" id="formSection">
+    <div class="form-group">
+        <label for="contractorName">Your Name</label>
+        <input type="text" id="contractorName" placeholder="Full name" required autocomplete="name">
+    </div>
+    <div class="form-group">
+        <label for="contractorCompany">Company</label>
+        <input type="text" id="contractorCompany" placeholder="Company name" required autocomplete="organization">
+    </div>
+    <div class="checkbox-group">
+        <input type="checkbox" id="acknowledge" onchange="toggleSubmit()">
+        <label for="acknowledge">I confirm I have read and understand the site safety, environmental, and supplier code of conduct requirements.</label>
+    </div>
+    <button class="submit-btn" id="submitBtn" disabled onclick="submitForm()">Submit Check-In</button>
+</div>
+
+<!-- SUCCESS MESSAGE (hidden until submit) -->
+<div class="success-msg" id="successMsg">
+    <div class="check">&#10003;</div>
+    <h2>Check-In Complete</h2>
+    <p>Your acknowledgment has been recorded.<br>A confirmation email has been sent.</p>
+</div>
+
+<div class="hotline">
+    Ethics Hotline: <a href="tel:8005550199">(800) 555-0199</a>
+</div>
+
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<script>
+// ============================================================
+// CONFIGURATION - Update these values before deployment
+// ============================================================
+const EMAILJS_PUBLIC_KEY = 'YOUR_EMAILJS_PUBLIC_KEY';
+const EMAILJS_SERVICE_ID = 'YOUR_EMAILJS_SERVICE_ID';
+const EMAILJS_TEMPLATE_ID = 'YOUR_EMAILJS_TEMPLATE_ID';
+const NOTIFICATION_EMAIL = 'YOUR_GMAIL_ADDRESS';
+
+// ============================================================
+// SITE DATA - Add/edit sites here
+// ============================================================
+const SITES = {
+    'AIKEN01': {
+        name: 'Aiken Yard',
+        rules: `
+            <h3>PPE Requirements</h3>
+            <ul>
+                <li>Hard hat required in all operational areas</li>
+                <li>Steel-toed boots required</li>
+                <li>High-visibility vest required</li>
+                <li>Safety glasses required</li>
+            </ul>
+            <h3>Environmental Rules</h3>
+            <ul>
+                <li>No discharge of any materials to storm drains</li>
+                <li>Report any spills immediately to site manager</li>
+                <li>Follow posted dust control procedures</li>
+            </ul>
+            <h3>Traffic & Hazard Zones</h3>
+            <ul>
+                <li>Maximum speed: 10 MPH on site</li>
+                <li>Yield to all heavy equipment</li>
+                <li>Stay within marked pedestrian zones</li>
+            </ul>
+            <h3>Emergency Contact</h3>
+            <ul>
+                <li>Site Manager: (803) 555-0100</li>
+                <li>Emergency: 911</li>
+            </ul>
+        `
+    },
+    'AUGUSTA01': {
+        name: 'Augusta Yard',
+        rules: `
+            <h3>PPE Requirements</h3>
+            <ul>
+                <li>Hard hat required in all operational areas</li>
+                <li>Steel-toed boots required</li>
+                <li>High-visibility vest required</li>
+                <li>Hearing protection in marked zones</li>
+            </ul>
+            <h3>Environmental Rules</h3>
+            <ul>
+                <li>All containers must be properly labeled</li>
+                <li>No open burning permitted</li>
+                <li>Report any environmental concerns to site manager</li>
+            </ul>
+            <h3>Traffic & Hazard Zones</h3>
+            <ul>
+                <li>Maximum speed: 10 MPH on site</li>
+                <li>One-way traffic flow - follow posted signs</li>
+                <li>No pedestrian access to shredder area</li>
+            </ul>
+            <h3>Emergency Contact</h3>
+            <ul>
+                <li>Site Manager: (706) 555-0200</li>
+                <li>Emergency: 911</li>
+            </ul>
+        `
+    },
+    'MACON01': {
+        name: 'Macon Yard',
+        rules: `
+            <h3>PPE Requirements</h3>
+            <ul>
+                <li>Hard hat required in all operational areas</li>
+                <li>Steel-toed boots required</li>
+                <li>High-visibility vest required</li>
+            </ul>
+            <h3>Environmental Rules</h3>
+            <ul>
+                <li>Stormwater BMPs must be maintained</li>
+                <li>No idling over 5 minutes</li>
+                <li>Report any fluid leaks immediately</li>
+            </ul>
+            <h3>Traffic & Hazard Zones</h3>
+            <ul>
+                <li>Maximum speed: 10 MPH on site</li>
+                <li>Check in at scale house before proceeding</li>
+            </ul>
+            <h3>Emergency Contact</h3>
+            <ul>
+                <li>Site Manager: (478) 555-0300</li>
+                <li>Emergency: 911</li>
+            </ul>
+        `
+    }
+};
+
+// ============================================================
+// INIT
+// ============================================================
+(function init() {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    const params = new URLSearchParams(window.location.search);
+    const siteId = (params.get('site') || '').toUpperCase();
+    const site = SITES[siteId];
+
+    if (site) {
+        document.getElementById('siteName').textContent = site.name + ' (' + siteId + ')';
+        document.getElementById('siteContent').innerHTML = site.rules;
+    } else {
+        document.getElementById('siteName').textContent = siteId || 'Unknown Site';
+        document.getElementById('siteContent').innerHTML =
+            '<p style="color:#c00;font-weight:600;">Site not recognized. Please verify the QR code or contact your site manager.</p>';
+    }
+})();
+
+function toggleSubmit() {
+    document.getElementById('submitBtn').disabled = !document.getElementById('acknowledge').checked;
+}
+
+function submitForm() {
+    const name = document.getElementById('contractorName').value.trim();
+    const company = document.getElementById('contractorCompany').value.trim();
+
+    if (!name || !company) {
+        alert('Please enter your name and company.');
+        return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const siteId = (params.get('site') || '').toUpperCase();
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10);
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    // EmailJS template parameters
+    // The template body should output the structured format:
+    // Site: {{site}}
+    // Date: {{date}} {{time}}
+    // Name: {{name}}
+    // Company: {{company}}
+    // Acknowledged: Yes
+    const templateParams = {
+        to_email: NOTIFICATION_EMAIL,
+        subject: 'Contractor Check-In \u2013 ' + siteId + ' \u2013 ' + dateStr,
+        site: siteId,
+        date: dateStr,
+        time: timeStr,
+        name: name,
+        company: company,
+        acknowledged: 'Yes',
+        message: 'Site: ' + siteId + '\nDate: ' + dateStr + ' ' + timeStr + '\nName: ' + name + '\nCompany: ' + company + '\nAcknowledged: Yes'
+    };
+
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+        .then(function() {
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('siteRules').style.display = 'none';
+            document.getElementById('successMsg').style.display = 'block';
+        })
+        .catch(function(err) {
+            alert('Submission failed. Please try again or contact the site manager.');
+            btn.disabled = false;
+            btn.textContent = 'Submit Check-In';
+            console.error('EmailJS error:', err);
+        });
+}
+</script>
+
+</body>
+</html>

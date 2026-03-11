@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contractor Check-In QR Codes</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fff;
+            color: #333;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 1.5rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: center;
+        }
+        .card {
+            border: 2px solid #1a5632;
+            border-radius: 12px;
+            padding: 24px;
+            width: 300px;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+        .card .site-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1a5632;
+            margin-bottom: 4px;
+        }
+        .card .site-id {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 16px;
+        }
+        .card .qr {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .card .qr img, .card .qr canvas {
+            width: 200px;
+            height: 200px;
+        }
+        .card .instructions {
+            font-size: 0.8rem;
+            color: #666;
+            line-height: 1.4;
+            border-top: 1px solid #eee;
+            padding-top: 12px;
+        }
+        .card .url {
+            font-size: 0.65rem;
+            color: #aaa;
+            margin-top: 8px;
+            word-break: break-all;
+        }
+        @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+            .cards { gap: 40px; }
+            .card { border-width: 1px; }
+        }
+        .no-print {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .print-btn {
+            padding: 10px 24px;
+            background: #1a5632;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .print-btn:hover { background: #0f3d20; }
+    </style>
+</head>
+<body>
+
+<h1>Contractor Check-In QR Codes</h1>
+<p class="subtitle">Print and post at each site entrance</p>
+
+<div class="no-print">
+    <button class="print-btn" onclick="window.print()">Print QR Codes</button>
+</div>
+
+<div class="cards" id="cards"></div>
+
+<script>
+// ============================================================
+// CONFIG — Update BASE_URL after GitHub Pages is live
+// ============================================================
+const BASE_URL = 'https://mcdougaj.github.io/Contractors/';
+
+const SITES = [
+    { id: 'AIKEN01',   name: 'Aiken Yard' },
+    { id: 'AUGUSTA01', name: 'Augusta Yard' },
+    { id: 'MACON01',   name: 'Macon Yard' }
+];
+
+function generateQR(text, size) {
+    const qr = qrcode(0, 'M');
+    qr.addData(text);
+    qr.make();
+    return qr.createDataURL(10, 4);
+}
+
+const container = document.getElementById('cards');
+
+SITES.forEach(site => {
+    const url = BASE_URL + '?site=' + site.id;
+    const imgSrc = generateQR(url, 200);
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+        <div class="site-name">${site.name}</div>
+        <div class="site-id">${site.id}</div>
+        <div class="qr"><img src="${imgSrc}" alt="QR Code for ${site.name}"></div>
+        <div class="instructions">
+            Scan with your phone camera to complete<br>
+            the Contractor Safety Check-In
+        </div>
+        <div class="url">${url}</div>
+    `;
+    container.appendChild(card);
+});
+</script>
+
+</body>
+</html>
