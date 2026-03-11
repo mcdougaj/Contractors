@@ -313,17 +313,11 @@
     Ethics Hotline: <a href="tel:8005550199">(800) 555-0199</a>
 </div>
 
-<!-- EmailJS SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-
 <script>
 // ============================================================
-// CONFIGURATION - Update these values before deployment
+// CONFIGURATION
 // ============================================================
-const EMAILJS_PUBLIC_KEY = 'YOUR_EMAILJS_PUBLIC_KEY';
-const EMAILJS_SERVICE_ID = 'YOUR_EMAILJS_SERVICE_ID';
-const EMAILJS_TEMPLATE_ID = 'YOUR_EMAILJS_TEMPLATE_ID';
-const NOTIFICATION_EMAIL = 'YOUR_GMAIL_ADDRESS';
+const WEBHOOK_URL = 'https://mcdou.app.n8n.cloud/webhook/contractor-checkin';
 
 // ============================================================
 // SITE DATA - Add/edit sites here
@@ -420,7 +414,6 @@ const SITES = {
 // INIT
 // ============================================================
 (function init() {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
     const params = new URLSearchParams(window.location.search);
     const siteId = (params.get('site') || '').toUpperCase();
     const site = SITES[siteId];
@@ -458,26 +451,25 @@ function submitForm() {
     btn.disabled = true;
     btn.textContent = 'Submitting...';
 
-    // EmailJS template parameters
-    // The template body should output the structured format:
-    // Site: {{site}}
-    // Date: {{date}} {{time}}
-    // Name: {{name}}
-    // Company: {{company}}
-    // Acknowledged: Yes
-    const templateParams = {
-        to_email: NOTIFICATION_EMAIL,
-        subject: 'Contractor Check-In \u2013 ' + siteId + ' \u2013 ' + dateStr,
+    const payload = {
         site: siteId,
         date: dateStr,
         time: timeStr,
         name: name,
         company: company,
         acknowledged: 'Yes',
-        message: 'Site: ' + siteId + '\nDate: ' + dateStr + ' ' + timeStr + '\nName: ' + name + '\nCompany: ' + company + '\nAcknowledged: Yes'
+        received: new Date().toISOString()
     };
 
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+    fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+        .then(function(res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        })
         .then(function() {
             document.getElementById('formSection').style.display = 'none';
             document.getElementById('siteRules').style.display = 'none';
@@ -487,7 +479,7 @@ function submitForm() {
             alert('Submission failed. Please try again or contact the site manager.');
             btn.disabled = false;
             btn.textContent = 'Submit Check-In';
-            console.error('EmailJS error:', err);
+            console.error('Webhook error:', err);
         });
 }
 </script>
