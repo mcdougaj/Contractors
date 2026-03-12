@@ -189,6 +189,44 @@
             margin: 4px 0 8px 0;
         }
 
+        /* Evacuation map */
+        .evac-map-wrap {
+            margin: 10px 0;
+            border: 2px solid #c00;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .evac-map-wrap img {
+            width: 100%;
+            display: block;
+            cursor: zoom-in;
+        }
+        .evac-map-wrap.zoomed img {
+            width: 200%;
+            cursor: zoom-out;
+        }
+        .evac-map-wrap.zoomed {
+            overflow: auto;
+            max-height: 70vh;
+            -webkit-overflow-scrolling: touch;
+        }
+        .evac-map-label {
+            background: #c00;
+            color: white;
+            font-weight: 700;
+            font-size: 0.82rem;
+            text-align: center;
+            padding: 6px 10px;
+        }
+        .zoom-hint {
+            font-size: 0.78rem;
+            color: #888;
+            text-align: center;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
         /* Step acknowledgment checkbox */
         .step-ack {
             display: flex;
@@ -316,7 +354,7 @@
 // CONFIGURATION
 // ============================================================
 const WEBHOOK_URL = 'https://mcdou.app.n8n.cloud/webhook/contractor-checkin';
-const TOTAL_STEPS = 8;
+var TOTAL_STEPS = 9; // recalculated in startTraining() based on site
 
 // ============================================================
 // SITE DATA - Add/edit sites here
@@ -325,6 +363,23 @@ const SITES = {
     'EVERETT01': {
         name: 'Everett Yard',
         address: '69 Rover Street, Everett, MA 02149',
+        evacuationMap: 'evacuation-map.png',
+        rallyPoints: `
+            <h4>&#127987; Rally Points</h4>
+            <ul>
+                <li><strong>Primary Rally Point:</strong> National Trailer Parking Lot (at Main Gate)</li>
+                <li><strong>Secondary Rally Point:</strong> Employee Parking Lot (at Secondary Exit Ramp)</li>
+            </ul>
+            <h4>&#9888;&#65039; What to Do</h4>
+            <ul>
+                <li>Follow the red egress routes shown on the map above</li>
+                <li>Radio communication signals evacuation &mdash; listen for it</li>
+                <li>Report to the security guard house once at rally point</li>
+                <li><strong>Do NOT block the entrance</strong> &mdash; emergency vehicles need access</li>
+                <li>Do NOT leave the site until given the all-clear</li>
+                <li>If you cannot reach the primary rally point, proceed to the secondary rally point</li>
+            </ul>
+        `,
         rules: `
             <h4>&#128205; Site Address</h4>
             <p style="font-weight:600;">69 Rover Street, Everett, MA 02149</p>
@@ -784,6 +839,9 @@ function startTraining() {
     trainingStartTime = Date.now();
     sectionTimestamps = [];
 
+    // Calculate total steps: 1 (site) + 1 (evac map if exists) + 7 (corporate training)
+    TOTAL_STEPS = 1 + (currentSite.evacuationMap ? 1 : 0) + TRAINING_SECTIONS.length;
+
     document.getElementById('identifySection').style.display = 'none';
     document.getElementById('progressContainer').style.display = 'block';
     document.getElementById('trainingSection').style.display = 'block';
@@ -798,16 +856,31 @@ function startTraining() {
 function renderSteps() {
     var container = document.getElementById('stepsContainer');
     var html = '';
+    var nextStep = 1;
 
     // Step 1: Site-specific requirements
-    html += buildStepHTML(1, 'Site Safety Requirements', currentSite.rules,
+    html += buildStepHTML(nextStep, 'Site Safety Requirements', currentSite.rules,
         'I have read and understand the site-specific safety requirements for ' + currentSite.name + '.');
+    nextStep++;
 
-    // Steps 2-8: Training sections
+    // Step 2: Evacuation Map & Rally Points (if site has one)
+    if (currentSite.evacuationMap) {
+        var mapContent = '<div class="evac-map-wrap" onclick="this.classList.toggle(\'zoomed\')">' +
+            '<div class="evac-map-label">&#127987; EVACUATION MAP &mdash; ' + currentSite.name.toUpperCase() + '</div>' +
+            '<img src="' + currentSite.evacuationMap + '" alt="Evacuation map for ' + currentSite.name + '">' +
+            '</div>' +
+            '<div class="zoom-hint">Tap map to zoom in/out</div>' +
+            (currentSite.rallyPoints || '');
+        html += buildStepHTML(nextStep, 'Evacuation Map & Rally Points', mapContent,
+            'I have reviewed the evacuation map and know where the rally points are located.');
+        nextStep++;
+    }
+
+    // Remaining steps: Corporate training sections
     for (var i = 0; i < TRAINING_SECTIONS.length; i++) {
         var sec = TRAINING_SECTIONS[i];
-        var stepNum = i + 2;
-        html += buildStepHTML(stepNum, sec.title, sec.content, sec.checkboxLabel);
+        html += buildStepHTML(nextStep, sec.title, sec.content, sec.checkboxLabel);
+        nextStep++;
     }
 
     container.innerHTML = html;
