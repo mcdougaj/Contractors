@@ -25,85 +25,38 @@
         }
         .header h1 { font-size: 1.3rem; margin-bottom: 4px; }
         .header .site-name { font-size: 1.1rem; opacity: 0.9; }
-        .section {
+
+        /* Progress bar */
+        .progress-container {
             background: white;
             border-radius: 10px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .section-title {
             padding: 14px 16px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: #1a5632;
-            border-bottom: 1px solid #eee;
-        }
-        details {
-            background: white;
-            border-radius: 10px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            overflow: hidden;
+            display: none;
         }
-        summary {
-            padding: 14px 16px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: #1a5632;
-            cursor: pointer;
-            list-style: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            -webkit-tap-highlight-color: transparent;
-            min-height: 48px;
-        }
-        summary::-webkit-details-marker { display: none; }
-        summary::after {
-            content: '\25BC';
-            font-size: 0.7rem;
-            transition: transform 0.2s;
-            color: #999;
-        }
-        details[open] summary::after { transform: rotate(180deg); }
-        details[open] summary { border-bottom: 1px solid #eee; }
-        .detail-content {
-            padding: 12px 16px;
-            font-size: 0.9rem;
-        }
-        .detail-content ul {
-            list-style: none;
-            padding: 0;
-        }
-        .detail-content li {
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f0f0;
-            padding-left: 20px;
-            position: relative;
-        }
-        .detail-content li:last-child { border-bottom: none; }
-        .detail-content li::before {
-            content: '\2022';
-            color: #1a5632;
-            font-weight: bold;
-            position: absolute;
-            left: 4px;
-        }
-        .site-content {
-            padding: 16px;
-            font-size: 0.9rem;
-        }
-        .site-content h3 {
-            font-size: 0.95rem;
+        .progress-text {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #666;
             margin-bottom: 8px;
-            color: #1a5632;
+            font-weight: 600;
         }
-        .site-content ul {
-            padding-left: 20px;
-            margin-bottom: 12px;
+        .progress-bar-track {
+            background: #e0e0e0;
+            border-radius: 4px;
+            height: 6px;
+            overflow: hidden;
         }
-        .site-content li { padding: 4px 0; }
+        .progress-bar-fill {
+            height: 100%;
+            background: #1a5632;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* Identify section */
         .form-section {
             background: white;
             border-radius: 10px;
@@ -134,29 +87,22 @@
             outline: none;
             border-color: #1a5632;
         }
-        .checkbox-group {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 12px;
-            background: #f9f9f9;
+        .site-display {
+            background: #f0f7f2;
             border-radius: 8px;
+            padding: 12px;
+            text-align: center;
             margin-bottom: 16px;
+            font-weight: 600;
+            color: #1a5632;
         }
-        .checkbox-group input[type="checkbox"] {
-            width: 24px;
-            height: 24px;
-            min-width: 24px;
+        .site-display .site-address {
+            font-weight: 400;
+            font-size: 0.85rem;
+            color: #666;
             margin-top: 2px;
-            accent-color: #1a5632;
-            cursor: pointer;
         }
-        .checkbox-group label {
-            font-size: 0.9rem;
-            cursor: pointer;
-            line-height: 1.4;
-        }
-        .submit-btn {
+        .begin-btn, .submit-btn {
             width: 100%;
             padding: 16px;
             background: #1a5632;
@@ -170,13 +116,111 @@
             min-height: 52px;
             transition: background 0.2s;
         }
+        .begin-btn:active, .submit-btn:active:not(:disabled) {
+            background: #0f3d20;
+        }
         .submit-btn:disabled {
             background: #ccc;
             cursor: not-allowed;
         }
-        .submit-btn:active:not(:disabled) {
-            background: #0f3d20;
+
+        /* Step cards */
+        .step {
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
+        .step.locked { display: none; }
+        .step-header {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 48px;
+        }
+        .step.completed .step-header {
+            background: #f0f7f2;
+        }
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #1a5632;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .step.completed .step-number {
+            background: #2e7d32;
+            font-size: 1rem;
+        }
+        .step-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a5632;
+            flex-grow: 1;
+        }
+        .step-content {
+            padding: 4px 16px 8px 16px;
+            font-size: 0.88rem;
+        }
+        .step.completed .step-content { display: none; }
+        .step-content h4 {
+            font-size: 0.92rem;
+            margin: 12px 0 6px 0;
+            color: #1a5632;
+        }
+        .step-content h4:first-child { margin-top: 4px; }
+        .step-content ul {
+            padding-left: 18px;
+            margin-bottom: 8px;
+        }
+        .step-content li {
+            padding: 3px 0;
+            line-height: 1.45;
+        }
+        .step-content p {
+            margin: 4px 0 8px 0;
+        }
+
+        /* Step acknowledgment checkbox */
+        .step-ack {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f9f9f9;
+            border-top: 1px solid #eee;
+        }
+        .step.completed .step-ack { display: none; }
+        .step-ack input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            margin-top: 2px;
+            accent-color: #1a5632;
+            cursor: pointer;
+        }
+        .step-ack label {
+            font-size: 0.88rem;
+            cursor: pointer;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        /* Submit section */
+        .submit-section {
+            display: none;
+            margin-bottom: 12px;
+        }
+
+        /* Success message */
         .success-msg {
             display: none;
             text-align: center;
@@ -188,6 +232,25 @@
         .success-msg .check { font-size: 3rem; margin-bottom: 12px; }
         .success-msg h2 { color: #1a5632; margin-bottom: 8px; }
         .success-msg p { color: #666; }
+        .success-msg .duration {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f0f7f2;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #1a5632;
+            font-weight: 600;
+        }
+
+        /* Error state */
+        .error-msg {
+            color: #c00;
+            font-weight: 600;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Hotline */
         .hotline {
             text-align: center;
             padding: 12px;
@@ -200,113 +263,48 @@
 <body>
 
 <div class="header">
-    <h1>Contractor Check-In</h1>
+    <h1>Contractor Safety Check-In</h1>
     <div class="site-name" id="siteName">Loading site...</div>
 </div>
 
-<!-- SITE-SPECIFIC SAFETY CONTENT -->
-<div class="section" id="siteRules">
-    <div class="section-title">Site Safety Requirements</div>
-    <div class="site-content" id="siteContent">
-        <!-- Populated by JS based on ?site= parameter -->
+<!-- PROGRESS BAR -->
+<div class="progress-container" id="progressContainer">
+    <div class="progress-text" id="progressText">Section 0 of 8</div>
+    <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progressFill"></div>
     </div>
 </div>
 
-<!-- SUPPLIER CODE OF CONDUCT - COLLAPSIBLE SECTIONS -->
-<details>
-    <summary>Safety Requirements</summary>
-    <div class="detail-content">
-        <ul>
-            <li>Complete all required training before entering any facility</li>
-            <li>Maintain required certifications for on-site work</li>
-            <li>Adhere to all site safety procedures at all times</li>
-            <li>Personal protective equipment (PPE) must be worn as posted</li>
-        </ul>
+<!-- SCREEN 1: IDENTIFY -->
+<div id="identifySection">
+    <div class="form-section">
+        <div class="site-display" id="siteDisplay">Loading site...</div>
+        <div class="form-group">
+            <label for="contractorName">Your Name</label>
+            <input type="text" id="contractorName" placeholder="Full name" required autocomplete="name">
+        </div>
+        <div class="form-group">
+            <label for="contractorCompany">Company</label>
+            <input type="text" id="contractorCompany" placeholder="Company name" required autocomplete="organization">
+        </div>
+        <button class="begin-btn" id="beginBtn" onclick="startTraining()">Begin Safety Training</button>
     </div>
-</details>
-
-<details>
-    <summary>Environmental / Sustainability</summary>
-    <div class="detail-content">
-        <ul>
-            <li>Comply with all environmental laws and regulations</li>
-            <li>Conduct activities to protect surrounding communities</li>
-            <li>Follow site-specific environmental rules displayed above</li>
-            <li>Report any spills or environmental incidents immediately</li>
-        </ul>
-    </div>
-</details>
-
-<details>
-    <summary>Integrity & Compliance</summary>
-    <div class="detail-content">
-        <ul>
-            <li>Zero tolerance for corruption, bribery, or improper payments</li>
-            <li>No gifts or entertainment to company employees in connection with contract work (gifts under $50 nominal value only)</li>
-            <li>Comply with all applicable laws, rules, and regulations</li>
-            <li>Support fair competition and antitrust compliance</li>
-        </ul>
-    </div>
-</details>
-
-<details>
-    <summary>Workplace Conduct</summary>
-    <div class="detail-content">
-        <ul>
-            <li>Zero tolerance for violence &mdash; no weapons on premises</li>
-            <li>Respect diversity, equal opportunity, and nondiscrimination</li>
-            <li>No child labor, human trafficking, or labor law violations</li>
-            <li>Treat all workers with dignity and respect</li>
-        </ul>
-    </div>
-</details>
-
-<details>
-    <summary>Confidentiality</summary>
-    <div class="detail-content">
-        <ul>
-            <li>Safeguard any confidential information with utmost care</li>
-            <li>Immediately report any inadvertent disclosure</li>
-            <li>Maintain accurate records related to work performed</li>
-        </ul>
-    </div>
-</details>
-
-<details>
-    <summary>Reporting Violations</summary>
-    <div class="detail-content">
-        <ul>
-            <li>Report any witnessed or suspected wrongdoing</li>
-            <li>No retaliation for good-faith reporting</li>
-            <li>Contact your procurement representative or operations management</li>
-            <li>Ethics hotline: <a href="tel:8005550199">(800) 555-0199</a></li>
-            <li>Online: <a href="https://acmecompany.ethicspoint.com" target="_blank">acmecompany.ethicspoint.com</a></li>
-        </ul>
-    </div>
-</details>
-
-<!-- ACKNOWLEDGMENT FORM -->
-<div class="form-section" id="formSection">
-    <div class="form-group">
-        <label for="contractorName">Your Name</label>
-        <input type="text" id="contractorName" placeholder="Full name" required autocomplete="name">
-    </div>
-    <div class="form-group">
-        <label for="contractorCompany">Company</label>
-        <input type="text" id="contractorCompany" placeholder="Company name" required autocomplete="organization">
-    </div>
-    <div class="checkbox-group">
-        <input type="checkbox" id="acknowledge" onchange="toggleSubmit()">
-        <label for="acknowledge">I confirm I have read and understand the site safety, environmental, and supplier code of conduct requirements.</label>
-    </div>
-    <button class="submit-btn" id="submitBtn" disabled onclick="submitForm()">Submit Check-In</button>
 </div>
 
-<!-- SUCCESS MESSAGE (hidden until submit) -->
+<!-- SCREEN 2: TRAINING STEPPER -->
+<div id="trainingSection" style="display:none;">
+    <div id="stepsContainer"></div>
+    <div class="submit-section" id="submitSection">
+        <button class="submit-btn" id="submitBtn" onclick="submitForm()">Submit Check-In</button>
+    </div>
+</div>
+
+<!-- SCREEN 3: SUCCESS -->
 <div class="success-msg" id="successMsg">
     <div class="check">&#10003;</div>
     <h2>Check-In Complete</h2>
-    <p>Your acknowledgment has been recorded.<br>A confirmation email has been sent.</p>
+    <p>Your safety training acknowledgment has been recorded.</p>
+    <div class="duration" id="durationDisplay"></div>
 </div>
 
 <div class="hotline">
@@ -318,34 +316,103 @@
 // CONFIGURATION
 // ============================================================
 const WEBHOOK_URL = 'https://mcdou.app.n8n.cloud/webhook/contractor-checkin';
+const TOTAL_STEPS = 8;
 
 // ============================================================
 // SITE DATA - Add/edit sites here
 // ============================================================
 const SITES = {
+    'EVERETT01': {
+        name: 'Everett Yard',
+        address: '69 Rover Street, Everett, MA 02149',
+        rules: `
+            <h4>&#128205; Site Address</h4>
+            <p style="font-weight:600;">69 Rover Street, Everett, MA 02149</p>
+
+            <h4>&#128100; Site Contacts</h4>
+            <ul>
+                <li><strong>Main Site Contact:</strong> <em>(see posted signage)</em></li>
+                <li><strong>Alternative Contact:</strong> <em>(see posted signage)</em></li>
+                <li><strong>Environmental Contact:</strong> <em>(see posted signage)</em></li>
+            </ul>
+
+            <h4>&#129514; PPE Requirements</h4>
+            <ul>
+                <li>Hard hat required in all operational areas</li>
+                <li>Safety glasses required at all times</li>
+                <li>Steel-toed safety shoes required</li>
+                <li>Long pants (jeans or work pants) required</li>
+                <li>High-visibility vest in roadways, yards, and truck traffic areas</li>
+                <li>Gloves when handling sharp objects, heat, or chemicals</li>
+                <li>Ear plugs in noisy areas</li>
+                <li>Face shield required for grinding and welding</li>
+                <li>Dust masks available for dust and dirt protection</li>
+            </ul>
+
+            <h4>&#128664; Traffic &amp; Vehicle Rules</h4>
+            <ul>
+                <li>Maximum speed: 10 MPH on site</li>
+                <li>Keep safe distance from trucks, cranes, loaders, and mobile equipment</li>
+                <li>Stay visible to equipment operators at all times</li>
+                <li>Do not walk in operating area without OK from the operator</li>
+                <li>Never walk under raised buckets, elevated loads, or behind loaded trucks</li>
+                <li>Stay away from trucks dumping loads</li>
+                <li>Watch for operator blind spots (arm side of crane)</li>
+                <li>Never walk between rail cars</li>
+            </ul>
+
+            <h4>&#127987; Evacuation &amp; Rally Points</h4>
+            <ul>
+                <li><strong>Primary Rally Point:</strong> National Trailer Parking Lot (Main Gate)</li>
+                <li><strong>Secondary Rally Point:</strong> Employee Parking Lot (Secondary Exit Ramp)</li>
+                <li>Radio communication signals evacuation</li>
+                <li>Report to security guard house; do not block entrance</li>
+                <li>First aid kits and AEDs available on site</li>
+            </ul>
+
+            <h4>&#9888;&#65039; Emergency Procedures</h4>
+            <ul>
+                <li><strong>Emergency:</strong> 911</li>
+                <li>In case of fire, medical, or other emergency &mdash; contact supervisor/manager</li>
+                <li>If oil or chemical spill &mdash; notify site contact immediately; contain/stop flow if safe</li>
+                <li>Visitors and consultants must stay with site contact and go to designated assembly area</li>
+                <li>Do NOT leave the site without making a report</li>
+            </ul>
+
+            <h4>&#127811; Environmental Expectations</h4>
+            <ul>
+                <li>All waste disposals reviewed with site contact and Environmental Manager</li>
+                <li>Daily clean-up required at all work areas before leaving site</li>
+                <li>All chemicals must be approved through Radius Recycling EH&amp;S with SDS on file</li>
+                <li>Source control requirements must be followed when bringing material on site</li>
+                <li>Comply with all environmental laws, regulations, and company standards</li>
+            </ul>
+        `
+    },
     'AIKEN01': {
         name: 'Aiken Yard',
+        address: 'Aiken, SC',
         rules: `
-            <h3>PPE Requirements</h3>
+            <h4>&#129514; PPE Requirements</h4>
             <ul>
                 <li>Hard hat required in all operational areas</li>
                 <li>Steel-toed boots required</li>
                 <li>High-visibility vest required</li>
                 <li>Safety glasses required</li>
             </ul>
-            <h3>Environmental Rules</h3>
+            <h4>&#127811; Environmental Rules</h4>
             <ul>
                 <li>No discharge of any materials to storm drains</li>
                 <li>Report any spills immediately to site manager</li>
                 <li>Follow posted dust control procedures</li>
             </ul>
-            <h3>Traffic & Hazard Zones</h3>
+            <h4>&#128664; Traffic &amp; Hazard Zones</h4>
             <ul>
                 <li>Maximum speed: 10 MPH on site</li>
                 <li>Yield to all heavy equipment</li>
                 <li>Stay within marked pedestrian zones</li>
             </ul>
-            <h3>Emergency Contact</h3>
+            <h4>&#9888;&#65039; Emergency Contact</h4>
             <ul>
                 <li>Site Manager: (803) 555-0100</li>
                 <li>Emergency: 911</li>
@@ -354,27 +421,28 @@ const SITES = {
     },
     'AUGUSTA01': {
         name: 'Augusta Yard',
+        address: 'Augusta, GA',
         rules: `
-            <h3>PPE Requirements</h3>
+            <h4>&#129514; PPE Requirements</h4>
             <ul>
                 <li>Hard hat required in all operational areas</li>
                 <li>Steel-toed boots required</li>
                 <li>High-visibility vest required</li>
                 <li>Hearing protection in marked zones</li>
             </ul>
-            <h3>Environmental Rules</h3>
+            <h4>&#127811; Environmental Rules</h4>
             <ul>
                 <li>All containers must be properly labeled</li>
                 <li>No open burning permitted</li>
                 <li>Report any environmental concerns to site manager</li>
             </ul>
-            <h3>Traffic & Hazard Zones</h3>
+            <h4>&#128664; Traffic &amp; Hazard Zones</h4>
             <ul>
                 <li>Maximum speed: 10 MPH on site</li>
                 <li>One-way traffic flow - follow posted signs</li>
                 <li>No pedestrian access to shredder area</li>
             </ul>
-            <h3>Emergency Contact</h3>
+            <h4>&#9888;&#65039; Emergency Contact</h4>
             <ul>
                 <li>Site Manager: (706) 555-0200</li>
                 <li>Emergency: 911</li>
@@ -383,25 +451,26 @@ const SITES = {
     },
     'MACON01': {
         name: 'Macon Yard',
+        address: 'Macon, GA',
         rules: `
-            <h3>PPE Requirements</h3>
+            <h4>&#129514; PPE Requirements</h4>
             <ul>
                 <li>Hard hat required in all operational areas</li>
                 <li>Steel-toed boots required</li>
                 <li>High-visibility vest required</li>
             </ul>
-            <h3>Environmental Rules</h3>
+            <h4>&#127811; Environmental Rules</h4>
             <ul>
                 <li>Stormwater BMPs must be maintained</li>
                 <li>No idling over 5 minutes</li>
                 <li>Report any fluid leaks immediately</li>
             </ul>
-            <h3>Traffic & Hazard Zones</h3>
+            <h4>&#128664; Traffic &amp; Hazard Zones</h4>
             <ul>
                 <li>Maximum speed: 10 MPH on site</li>
                 <li>Check in at scale house before proceeding</li>
             </ul>
-            <h3>Emergency Contact</h3>
+            <h4>&#9888;&#65039; Emergency Contact</h4>
             <ul>
                 <li>Site Manager: (478) 555-0300</li>
                 <li>Emergency: 911</li>
@@ -411,54 +480,439 @@ const SITES = {
 };
 
 // ============================================================
+// TRAINING SECTIONS (Corporate-wide, from Safety Orientation
+// PDF and Environmental Expectations Brochure)
+// ============================================================
+const TRAINING_SECTIONS = [
+    {
+        id: 'core-safety',
+        title: 'Core Safety Principles',
+        checkboxLabel: 'I have read and understand the Core Safety Principles.',
+        content: `
+            <h4>Responsibility</h4>
+            <ul>
+                <li>Scrap processing is dangerous &mdash; never underestimate the size and power of equipment</li>
+                <li>Accidents can be serious or fatal; you are the most important factor in plant safety</li>
+                <li>Follow all safety rules and take necessary precautions at all times</li>
+                <li>Each person takes responsibility for their own safety and the safety of coworkers</li>
+                <li>If unsure about a job, call your supervisor for clarification before starting</li>
+                <li>Intentional disregard for safety will result in disciplinary action up to and including termination</li>
+            </ul>
+            <h4>Accident Prevention</h4>
+            <ul>
+                <li>Never take any action that creates immediate danger to yourself or others</li>
+                <li>You are responsible for recognizing unsafe conditions &mdash; correct if possible or report to supervisor</li>
+                <li>Do not enter areas or operate equipment unless you are trained and authorized</li>
+                <li>Some areas present severe hazards without specific precautions</li>
+            </ul>
+            <h4>Fitness for Duty</h4>
+            <ul>
+                <li>You must be fit for duty &mdash; not mentally or physically impaired</li>
+                <li>Impairments may include physical illness, substance abuse, fatigue, or stress</li>
+            </ul>
+        `
+    },
+    {
+        id: 'emergency-response',
+        title: 'Emergency Response',
+        checkboxLabel: 'I have read and understand the Emergency Response procedures.',
+        content: `
+            <h4>Emergency Procedures</h4>
+            <ul>
+                <li>In case of fire, medical, or other emergency &mdash; contact supervisor/manager or other employees immediately</li>
+                <li>Radio communication signals evacuation; report to designated assembly area</li>
+                <li>Do not block the entrance &mdash; emergency vehicles may need access</li>
+                <li>First aid kits and AEDs are available; most locations have first-aid trained personnel</li>
+                <li>Know your evacuation area before beginning any activities on site</li>
+                <li>Visitors and consultants must stay with their site contact during emergencies</li>
+                <li>Do NOT leave the site without making a report</li>
+            </ul>
+            <h4>Injury &amp; Incident Reporting</h4>
+            <ul>
+                <li>All injuries, regardless of severity, must be reported to your supervisor immediately</li>
+                <li>All equipment damage must be immediately reported</li>
+                <li>Unsafe equipment must be taken out of service</li>
+                <li>For vendor/contractor incidents: provide a detailed report including root cause(s) and corrective actions to prevent recurrence</li>
+            </ul>
+        `
+    },
+    {
+        id: 'equipment-machinery',
+        title: 'Equipment &amp; Machinery Safety',
+        checkboxLabel: 'I have read and understand the Equipment & Machinery Safety requirements.',
+        content: `
+            <h4>Machine &amp; Conveyor Safety</h4>
+            <ul>
+                <li>Keep hands, legs, and body parts out of machine hazard areas (conveyor rollers, chains)</li>
+                <li>Lockout equipment before cleaning, adjustment, or maintenance</li>
+                <li>Keep guards in place when equipment is operating</li>
+                <li>Never enter machine and conveyor areas unless trained and authorized</li>
+                <li>Do not wear loose clothing or jewelry around moving/rotating machinery</li>
+                <li>Long hair must be tied back or covered</li>
+            </ul>
+            <h4>Lockout Procedures</h4>
+            <ul>
+                <li>Conveyors and machines can cause amputations or fatal injuries &mdash; lockout is essential</li>
+                <li>Required whenever cleaning, adjusting, or repairing machinery that could cause injury if accidentally activated</li>
+                <li>Each person exposed to the hazard must place their individual lock on the energy source</li>
+                <li>Only the person who placed a lock may remove it</li>
+                <li>Verify machine is clear before restarting after lockout</li>
+            </ul>
+            <h4>Operating Mobile Equipment</h4>
+            <ul>
+                <li>Do not operate unsafe equipment &mdash; inspect all equipment before operating</li>
+                <li>Submit inspection report at the beginning of each shift</li>
+                <li>Report damage or safety issues immediately</li>
+                <li>Keep engine compartment clean and free of material that can burn</li>
+                <li>All mobile equipment must have a fully charged fire extinguisher</li>
+                <li>Never lift scrap or unstable loads over people</li>
+                <li>Never operate machinery without a proper Hoisting Engineer License</li>
+                <li>Do not exceed load limits or safe operating limits</li>
+            </ul>
+            <h4>Hand &amp; Power Tools</h4>
+            <ul>
+                <li>Inspect all tools before use; damaged or defective tools must be repaired or discarded</li>
+                <li>Use the right tool for the job</li>
+                <li>Face shield required when using power grinders</li>
+                <li>Be careful using tools from scrap piles</li>
+            </ul>
+            <h4>Welding &amp; Cutting</h4>
+            <ul>
+                <li>Fire extinguisher must be readily available when welding or cutting</li>
+                <li>Know where sparks and slag will fall; wet down areas and/or have a fire watch</li>
+                <li>Use proper protective lens and face protection</li>
+                <li>Inspect equipment before use; repair or replace damaged equipment</li>
+                <li>Secure cylinders and replace caps when not in use</li>
+            </ul>
+        `
+    },
+    {
+        id: 'yard-hazards',
+        title: 'Yard &amp; Mobile Equipment Hazards',
+        checkboxLabel: 'I have read and understand the Yard & Mobile Equipment Hazards.',
+        content: `
+            <h4>Working in a Scrap Yard</h4>
+            <ul>
+                <li>Traffic, weather, heavy equipment, potholes, dirt, and scrap are common hazards</li>
+                <li>Always think about where you are, what is happening around you, and what you are walking on</li>
+                <li>Slips and twisted ankles are common &mdash; be careful where you walk and step</li>
+                <li>Oily metal can be more slippery than ice</li>
+            </ul>
+            <h4>Working Around Trucks, Cranes &amp; Loaders</h4>
+            <ul>
+                <li>Keep safe distance from trucks, cranes, loaders, and other mobile equipment</li>
+                <li>Stay visible to the operator at all times</li>
+                <li>Do not walk in the operating area without an OK sign from the operator</li>
+                <li>Be aware of operator blind spots (e.g., crane arm side &mdash; operator cannot see you)</li>
+                <li>Never walk under a raised bucket, elevated load, or close to the back of a loaded truck</li>
+                <li>Wear high-visibility vest when working in roadways, yards, or areas with truck traffic</li>
+                <li>Stay away from trucks dumping loads &mdash; they may suddenly move forward or tip</li>
+            </ul>
+            <h4>Working Over Water</h4>
+            <ul>
+                <li>Wear a lifejacket when working in an area where you may fall into water</li>
+                <li>Life rings are mounted along all dock areas</li>
+                <li>Ensure someone can see you or knows where you are in case rescue is needed</li>
+            </ul>
+            <h4>Rail Cars</h4>
+            <ul>
+                <li>Never walk between rail cars &mdash; if moved you could be seriously injured or killed</li>
+                <li>Stay away from tracks when rail cars are being moved</li>
+            </ul>
+            <h4>Slips &amp; Trips</h4>
+            <ul>
+                <li>Always watch where you are walking</li>
+                <li>Metal, mud, and ice are common hazards</li>
+                <li>Keep walkways and stairs clear</li>
+            </ul>
+        `
+    },
+    {
+        id: 'ppe-fall-safety',
+        title: 'PPE &amp; Fall Safety',
+        checkboxLabel: 'I have read and understand the PPE & Fall Safety requirements.',
+        content: `
+            <h4>Personal Protective Equipment</h4>
+            <ul>
+                <li><strong>Minimum required:</strong> Hard hat, safety glasses, safety shoes, long pants</li>
+                <li>Gloves required when handling sharp objects, heat, or chemicals</li>
+                <li>Dust masks available for protection from dust and dirt</li>
+                <li>Wear ear plugs in noisy areas &mdash; ensure hands, ears, and plugs are clean before inserting</li>
+                <li>Grinding and welding require additional face shield protection</li>
+                <li>Contact the Health &amp; Safety Department about safety shoe and prescription safety glass programs</li>
+            </ul>
+            <h4>Manual Lifting &amp; Material Handling</h4>
+            <ul>
+                <li>Do not injure your back trying to lift or move heavy material</li>
+                <li>Get help or use a forklift, loader, or other equipment for heavy loads</li>
+            </ul>
+            <h4>Fall Prevention</h4>
+            <ul>
+                <li>Use ladders, guardrails, and catwalks when doing elevated work</li>
+                <li>When an elevated area does not have a guardrail and good work surface, use a manlift, harness, or fall protection</li>
+                <li>Always have two hands free when climbing ladders</li>
+                <li>Ladder must be stable and secure; inspect ladders before use</li>
+                <li>Aerial lifts require use of harness and lanyard</li>
+            </ul>
+        `
+    },
+    {
+        id: 'specialized-hazards',
+        title: 'Specialized Hazards',
+        checkboxLabel: 'I have read and understand the Specialized Hazards information.',
+        content: `
+            <h4>Chemical Hazards</h4>
+            <ul>
+                <li>Oils, lubricants, and fuels present fire hazard and may cause skin, eye, and respiratory irritation</li>
+                <li>Avoid prolonged contact; wear gloves and wash hands</li>
+                <li>Welding products present inhalation hazard &mdash; stay out of the smoke plume</li>
+                <li>Overexposure to welding rod chemicals may cause short and long-term health effects</li>
+                <li>Compressed gas cylinders may be under thousands of pounds of pressure or contain flammable gases &mdash; secure and properly store all cylinders</li>
+                <li>Chemicals including welding rods and gas cylinders are labeled with hazard information</li>
+                <li>Safety Data Sheets (SDS) are available from the Health &amp; Safety Department</li>
+                <li>Chemical containers in scrap material from suppliers should be empty but may contain residual material &mdash; report suspect containers</li>
+            </ul>
+            <h4>Confined Spaces</h4>
+            <ul>
+                <li>Confined spaces include tanks, pits, sewers, and cyclones</li>
+                <li>Not designed for people to safely enter without special precautions</li>
+                <li>May contain hazards that are not easy to see</li>
+                <li>Contact the Health &amp; Safety Department for assistance before entry</li>
+            </ul>
+            <h4>Lead</h4>
+            <ul>
+                <li>Torch cutting of painted steel can result in exposure to lead from lead-based paint</li>
+                <li>Rules for working in these areas are in the company Lead Program</li>
+                <li>Contact the Health &amp; Safety Department for additional information</li>
+            </ul>
+        `
+    },
+    {
+        id: 'environmental-expectations',
+        title: 'Environmental Expectations',
+        checkboxLabel: 'I have read and understand the Environmental Expectations.',
+        content: `
+            <h4>Our Commitment &mdash; The 3 C&rsquo;s</h4>
+            <ul>
+                <li><strong>Commitment:</strong> Sustainability is a core value &mdash; integrated into action through an Environmental Management System</li>
+                <li><strong>Compliance:</strong> All contractors and vendors must comply with applicable environmental laws, regulations, and company standards while on site</li>
+                <li><strong>Conservation:</strong> Reduce environmental impacts and conserve natural resources &mdash; minimize energy consumption, air emissions, and waste generation</li>
+            </ul>
+            <h4>Waste Disposal</h4>
+            <ul>
+                <li>All waste disposals must be reviewed with the site contact and Environmental Manager</li>
+                <li>Individual approval required for each disposal</li>
+            </ul>
+            <h4>Housekeeping</h4>
+            <ul>
+                <li>Follow good housekeeping practices to prevent injuries, fires, and spills</li>
+                <li>Daily clean-up is required at all work areas prior to leaving the site</li>
+            </ul>
+            <h4>Spill Response</h4>
+            <ul>
+                <li>Oil or chemical spills require immediate notification to your site contact</li>
+                <li>Safely contain or stop spill flow if possible; wait for help to arrive</li>
+            </ul>
+            <h4>Chemical Management</h4>
+            <ul>
+                <li>All chemicals must be approved through local Environmental Health &amp; Safety representatives</li>
+                <li>Safety Data Sheets (SDS) must be on file before bringing chemicals on site</li>
+            </ul>
+            <h4>Source Control</h4>
+            <ul>
+                <li>Source control requirements must be followed when bringing material on site</li>
+                <li>Read signage and check with your site contact for written requirements</li>
+            </ul>
+            <h4>Emergency Procedures</h4>
+            <ul>
+                <li>Know your evacuation area before beginning activities on site</li>
+                <li>If told to evacuate: stay with your site contact and proceed to the designated assembly area</li>
+                <li>Contact your site contact immediately to notify them of any emergency</li>
+                <li>Do NOT leave the site without making a report</li>
+                <li>Provide a detailed incident report including root cause(s) and corrective actions</li>
+            </ul>
+            <p style="text-align:center;font-weight:600;color:#1a5632;margin-top:12px;padding:8px;background:#f0f7f2;border-radius:6px;">
+                Please support our environmental intentions as we work together.
+            </p>
+        `
+    }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let trainingStartTime = null;
+let sectionTimestamps = [];
+let currentSiteId = '';
+let currentSite = null;
+
+// ============================================================
 // INIT
 // ============================================================
 (function init() {
     const params = new URLSearchParams(window.location.search);
-    const siteId = (params.get('site') || '').toUpperCase();
-    const site = SITES[siteId];
+    currentSiteId = (params.get('site') || '').toUpperCase();
+    currentSite = SITES[currentSiteId];
 
-    if (site) {
-        document.getElementById('siteName').textContent = site.name + ' (' + siteId + ')';
-        document.getElementById('siteContent').innerHTML = site.rules;
+    if (currentSite) {
+        document.getElementById('siteName').textContent = currentSite.name + ' (' + currentSiteId + ')';
+        document.getElementById('siteDisplay').innerHTML =
+            '<div>' + currentSite.name + ' (' + currentSiteId + ')</div>' +
+            '<div class="site-address">' + currentSite.address + '</div>';
     } else {
-        document.getElementById('siteName').textContent = siteId || 'Unknown Site';
-        document.getElementById('siteContent').innerHTML =
-            '<p style="color:#c00;font-weight:600;">Site not recognized. Please verify the QR code or contact your site manager.</p>';
+        document.getElementById('siteName').textContent = currentSiteId || 'Unknown Site';
+        document.getElementById('siteDisplay').innerHTML =
+            '<div style="color:#c00;">' + (currentSiteId || 'No site specified') + '</div>' +
+            '<div class="site-address" style="color:#c00;">Site not recognized. Please verify the QR code.</div>';
+        document.getElementById('beginBtn').disabled = true;
+        document.getElementById('beginBtn').style.background = '#ccc';
     }
 })();
 
-function toggleSubmit() {
-    document.getElementById('submitBtn').disabled = !document.getElementById('acknowledge').checked;
-}
-
-function submitForm() {
-    const name = document.getElementById('contractorName').value.trim();
-    const company = document.getElementById('contractorCompany').value.trim();
+// ============================================================
+// START TRAINING
+// ============================================================
+function startTraining() {
+    var name = document.getElementById('contractorName').value.trim();
+    var company = document.getElementById('contractorCompany').value.trim();
 
     if (!name || !company) {
         alert('Please enter your name and company.');
         return;
     }
 
-    const params = new URLSearchParams(window.location.search);
-    const siteId = (params.get('site') || '').toUpperCase();
-    const now = new Date();
-    const dateStr = now.toISOString().slice(0, 10);
-    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    trainingStartTime = Date.now();
+    sectionTimestamps = [];
 
-    const btn = document.getElementById('submitBtn');
+    document.getElementById('identifySection').style.display = 'none';
+    document.getElementById('progressContainer').style.display = 'block';
+    document.getElementById('trainingSection').style.display = 'block';
+
+    renderSteps();
+    updateProgress(0);
+}
+
+// ============================================================
+// RENDER STEPS
+// ============================================================
+function renderSteps() {
+    var container = document.getElementById('stepsContainer');
+    var html = '';
+
+    // Step 1: Site-specific requirements
+    html += buildStepHTML(1, 'Site Safety Requirements', currentSite.rules,
+        'I have read and understand the site-specific safety requirements for ' + currentSite.name + '.');
+
+    // Steps 2-8: Training sections
+    for (var i = 0; i < TRAINING_SECTIONS.length; i++) {
+        var sec = TRAINING_SECTIONS[i];
+        var stepNum = i + 2;
+        html += buildStepHTML(stepNum, sec.title, sec.content, sec.checkboxLabel);
+    }
+
+    container.innerHTML = html;
+}
+
+function buildStepHTML(num, title, content, checkboxLabel) {
+    var lockedClass = num === 1 ? '' : ' locked';
+    return '<div class="step' + lockedClass + '" data-step="' + num + '" id="step' + num + '">' +
+        '<div class="step-header">' +
+            '<span class="step-number" id="stepNum' + num + '">' + num + '</span>' +
+            '<span class="step-title">' + title + '</span>' +
+        '</div>' +
+        '<div class="step-content">' + content + '</div>' +
+        '<div class="step-ack">' +
+            '<input type="checkbox" id="ack' + num + '" onchange="acknowledgeStep(' + num + ')">' +
+            '<label for="ack' + num + '">' + checkboxLabel + '</label>' +
+        '</div>' +
+    '</div>';
+}
+
+// ============================================================
+// ACKNOWLEDGE STEP
+// ============================================================
+function acknowledgeStep(n) {
+    var checkbox = document.getElementById('ack' + n);
+    if (!checkbox.checked) return;
+
+    // Record timestamp
+    var stepEl = document.getElementById('step' + n);
+    var title = stepEl.querySelector('.step-title').textContent;
+    sectionTimestamps.push({
+        section: n,
+        label: title,
+        time: new Date().toISOString()
+    });
+
+    // Mark completed
+    stepEl.classList.add('completed');
+    document.getElementById('stepNum' + n).innerHTML = '&#10003;';
+    checkbox.disabled = true;
+
+    // Update progress
+    updateProgress(n);
+
+    // Reveal next or show submit
+    if (n < TOTAL_STEPS) {
+        var next = document.getElementById('step' + (n + 1));
+        next.classList.remove('locked');
+        setTimeout(function() {
+            next.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 200);
+    } else {
+        // All steps done — show submit
+        document.getElementById('submitSection').style.display = 'block';
+        setTimeout(function() {
+            document.getElementById('submitSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 200);
+    }
+}
+
+// ============================================================
+// PROGRESS
+// ============================================================
+function updateProgress(completedSteps) {
+    var pct = Math.round((completedSteps / TOTAL_STEPS) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent =
+        completedSteps === 0
+            ? 'Complete each section below'
+            : 'Section ' + completedSteps + ' of ' + TOTAL_STEPS + ' completed';
+}
+
+// ============================================================
+// SUBMIT
+// ============================================================
+function submitForm() {
+    var name = document.getElementById('contractorName').value.trim();
+    var company = document.getElementById('contractorCompany').value.trim();
+
+    var now = new Date();
+    var dateStr = now.toISOString().slice(0, 10);
+    var timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    var durationSeconds = Math.round((Date.now() - trainingStartTime) / 1000);
+    var durationDisplay = formatDuration(durationSeconds);
+    var completionSpeed = durationSeconds < 180 ? 'suspicious' : (durationSeconds < 480 ? 'fast' : 'normal');
+
+    var btn = document.getElementById('submitBtn');
     btn.disabled = true;
     btn.textContent = 'Submitting...';
 
-    const payload = {
-        site: siteId,
+    var payload = {
+        site: currentSiteId,
+        site_name: currentSite.name,
         date: dateStr,
         time: timeStr,
         name: name,
         company: company,
         acknowledged: 'Yes',
-        received: new Date().toISOString()
+        received: now.toISOString(),
+        training_duration_seconds: durationSeconds,
+        training_duration_display: durationDisplay,
+        sections_acknowledged: TOTAL_STEPS,
+        completion_speed: completionSpeed,
+        section_timestamps: sectionTimestamps
     };
 
     fetch(WEBHOOK_URL, {
@@ -471,9 +925,11 @@ function submitForm() {
             return res.json();
         })
         .then(function() {
-            document.getElementById('formSection').style.display = 'none';
-            document.getElementById('siteRules').style.display = 'none';
+            document.getElementById('trainingSection').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'none';
             document.getElementById('successMsg').style.display = 'block';
+            document.getElementById('durationDisplay').textContent =
+                'Training completed in ' + durationDisplay;
         })
         .catch(function(err) {
             alert('Submission failed. Please try again or contact the site manager.');
@@ -481,6 +937,17 @@ function submitForm() {
             btn.textContent = 'Submit Check-In';
             console.error('Webhook error:', err);
         });
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function formatDuration(seconds) {
+    var mins = Math.floor(seconds / 60);
+    var secs = seconds % 60;
+    if (mins === 0) return secs + ' seconds';
+    if (secs === 0) return mins + ' minute' + (mins !== 1 ? 's' : '');
+    return mins + ' minute' + (mins !== 1 ? 's' : '') + ' ' + secs + ' second' + (secs !== 1 ? 's' : '');
 }
 </script>
 
