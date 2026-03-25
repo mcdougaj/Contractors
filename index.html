@@ -112,6 +112,70 @@
             font-weight: 600;
             color: #1a5632;
         }
+
+        /* Decision engine screens */
+        .decision-screen {
+            display: none;
+            text-align: center;
+            padding: 32px 20px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+        .decision-screen .icon { font-size: 64px; margin-bottom: 12px; }
+        .decision-screen h2 { margin-bottom: 8px; font-size: 1.4rem; }
+        .decision-screen p { font-size: 0.95rem; line-height: 1.5; margin-bottom: 16px; }
+        .decision-screen .detail { font-size: 0.85rem; color: #666; margin-bottom: 20px; }
+        .decision-approved {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            border: 2px solid #22c55e;
+            color: #14532d;
+        }
+        .decision-quick {
+            background: linear-gradient(135deg, #fef9c3, #fef08a);
+            border: 2px solid #eab308;
+            color: #713f12;
+        }
+        .decision-full {
+            background: linear-gradient(135deg, #ffedd5, #fed7aa);
+            border: 2px solid #f97316;
+            color: #7c2d12;
+        }
+        .decision-reack {
+            background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+            border: 2px solid #ec4899;
+            color: #831843;
+        }
+        .decision-report {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            border: 2px solid #ef4444;
+            color: #7f1d1d;
+        }
+        .decision-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 6px;
+            min-width: 180px;
+        }
+        .btn-green { background: #16a34a; color: #fff; }
+        .btn-amber { background: #d97706; color: #fff; }
+        .btn-red { background: #dc2626; color: #fff; }
+        .btn-outline { background: #fff; color: #1a5632; border: 2px solid #1a5632; }
+        .lookup-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .lookup-spinner .spinner {
+            width: 48px; height: 48px; border: 4px solid #e5e7eb;
+            border-top: 4px solid #1a5632; border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .site-display .site-address {
             font-weight: 400;
             font-size: 0.85rem;
@@ -369,6 +433,59 @@
     </div>
 </div>
 
+<!-- LOOKUP SPINNER -->
+<div class="lookup-spinner" id="lookupSpinner">
+    <div class="spinner"></div>
+    <p style="color:#666;font-weight:600;">Checking your visit history...</p>
+</div>
+
+<!-- DECISION: ENTRY APPROVED (Case 1) -->
+<div class="decision-screen decision-approved" id="decisionApproved">
+    <div class="icon">✅</div>
+    <h2>Entry Approved</h2>
+    <p id="approvedMsg">You're cleared to enter. No training updates needed.</p>
+    <div class="detail" id="approvedDetail"></div>
+    <button class="decision-btn btn-green" onclick="approvedEntry()">Proceed to Site →</button>
+</div>
+
+<!-- DECISION: QUICK CONFIRMATION (Case 3) -->
+<div class="decision-screen decision-quick" id="decisionQuick">
+    <div class="icon">📋</div>
+    <h2>Quick Confirmation Needed</h2>
+    <p id="quickMsg">Minor policy changes since your last visit. Please confirm you've noted the updates.</p>
+    <div class="detail" id="quickDetail"></div>
+    <button class="decision-btn btn-amber" onclick="quickConfirm()">I Acknowledge the Updates ✓</button>
+</div>
+
+<!-- DECISION: FULL AWARENESS (Case 2) -->
+<div class="decision-screen decision-full" id="decisionFull">
+    <div class="icon">📖</div>
+    <h2>Updated Safety Training Required</h2>
+    <p id="fullMsg">Site policies have been updated since your last visit. Please complete the safety review.</p>
+    <div class="detail" id="fullDetail"></div>
+    <button class="decision-btn btn-amber" onclick="proceedToTraining()">Begin Safety Review →</button>
+</div>
+
+<!-- DECISION: RE-ACKNOWLEDGMENT (Case 4) -->
+<div class="decision-screen decision-reack" id="decisionReack">
+    <div class="icon">🔄</div>
+    <h2>Re-Acknowledgment Required</h2>
+    <p id="reackMsg">It's been a while since your last visit. Please complete the full safety training again.</p>
+    <div class="detail" id="reackDetail"></div>
+    <button class="decision-btn btn-amber" onclick="proceedToTraining()">Begin Full Training →</button>
+</div>
+
+<!-- DECISION: REPORT TO OFFICE (Case 5) -->
+<div class="decision-screen decision-report" id="decisionReport">
+    <div class="icon">🏢</div>
+    <h2>Please Report to the Site Office</h2>
+    <p id="reportMsg">We don't have a record of your previous safety training at this site.</p>
+    <div class="detail" id="reportDetail"></div>
+    <button class="decision-btn btn-red" onclick="proceedToTraining()">Complete Safety Training →</button>
+    <br>
+    <button class="decision-btn btn-outline" style="margin-top:8px;" onclick="window.location.reload()">← Start Over</button>
+</div>
+
 <!-- SCREEN 2: TRAINING STEPPER -->
 <div id="trainingSection" style="display:none;">
     <div id="stepsContainer"></div>
@@ -419,7 +536,9 @@
 // CONFIGURATION
 // ============================================================
 const WEBHOOK_URL = 'https://mcdou.app.n8n.cloud/webhook/contractor-checkin';
+const LOOKUP_URL = 'https://mcdou.app.n8n.cloud/webhook/contractor-lookup';
 var TOTAL_STEPS = 9; // recalculated in startTraining() based on site
+var lookupResult = null; // stores decision engine result
 
 // ============================================================
 // SITE DATA - Add/edit sites here
@@ -895,6 +1014,7 @@ let currentSite = null;
 function startTraining() {
     var name = document.getElementById('contractorName').value.trim();
     var company = document.getElementById('contractorCompany').value.trim();
+    var email = document.getElementById('contractorEmail').value.trim();
     var visitType = document.getElementById('visitType').value;
 
     if (!name || !company) {
@@ -906,10 +1026,150 @@ function startTraining() {
         return;
     }
 
+    // If email provided, check visit history via decision engine
+    if (email) {
+        document.getElementById('identifySection').style.display = 'none';
+        document.getElementById('lookupSpinner').style.display = 'block';
+
+        var lookupUrl = LOOKUP_URL + '?email=' + encodeURIComponent(email) + '&site=' + encodeURIComponent(currentSiteId);
+        fetch(lookupUrl)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                lookupResult = data;
+                document.getElementById('lookupSpinner').style.display = 'none';
+                handleDecision(data);
+            })
+            .catch(function(err) {
+                console.error('Lookup failed:', err);
+                document.getElementById('lookupSpinner').style.display = 'none';
+                // Fallback: if lookup fails, go straight to full training
+                proceedToTraining();
+            });
+        return;
+    }
+
+    // No email provided — go straight to training (first-time / no lookup)
+    proceedToTraining();
+}
+
+function handleDecision(data) {
+    var decision = data.decision || 'report_to_office';
+    var reason = data.reason || '';
+    var lastDate = data.last_visit_date || '';
+    var days = data.days_since_visit || '';
+    var siteName = data.site_name || currentSite.name;
+
+    if (decision === 'entry_approved') {
+        document.getElementById('approvedMsg').textContent =
+            'Welcome back! You\'re cleared to enter ' + siteName + '.';
+        document.getElementById('approvedDetail').textContent = reason;
+        document.getElementById('decisionApproved').style.display = 'block';
+
+    } else if (decision === 'quick_confirmation') {
+        document.getElementById('quickMsg').textContent =
+            'Minor policy changes at ' + siteName + ' since your last visit.';
+        document.getElementById('quickDetail').textContent = reason;
+        document.getElementById('decisionQuick').style.display = 'block';
+
+    } else if (decision === 'full_awareness') {
+        document.getElementById('fullMsg').textContent =
+            'Site policies at ' + siteName + ' have been significantly updated.';
+        document.getElementById('fullDetail').textContent = reason;
+        document.getElementById('decisionFull').style.display = 'block';
+
+    } else if (decision === 'reacknowledgment') {
+        document.getElementById('reackMsg').textContent =
+            'It\'s been ' + days + ' days since your last visit to ' + siteName + '.';
+        document.getElementById('reackDetail').textContent = reason;
+        document.getElementById('decisionReack').style.display = 'block';
+
+    } else {
+        // report_to_office or unknown
+        document.getElementById('reportMsg').textContent =
+            'No prior check-in record found for ' + siteName + '.';
+        document.getElementById('reportDetail').textContent = reason;
+        document.getElementById('decisionReport').style.display = 'block';
+    }
+}
+
+function hideAllDecisionScreens() {
+    var screens = ['decisionApproved','decisionQuick','decisionFull','decisionReack','decisionReport'];
+    screens.forEach(function(id) { document.getElementById(id).style.display = 'none'; });
+}
+
+function approvedEntry() {
+    // Green light — log the quick check-in and show success
+    hideAllDecisionScreens();
+    var now = new Date();
+    var payload = {
+        site: currentSiteId,
+        site_name: currentSite.name,
+        date: now.toISOString().slice(0, 10),
+        time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        name: document.getElementById('contractorName').value.trim(),
+        company: document.getElementById('contractorCompany').value.trim(),
+        email: document.getElementById('contractorEmail').value.trim(),
+        phone: document.getElementById('contractorPhone').value.trim(),
+        visit_type: document.getElementById('visitType').value,
+        purpose: document.getElementById('visitPurpose').value.trim(),
+        acknowledged: 'Yes (returning)',
+        received: now.toISOString(),
+        training_duration_seconds: 0,
+        training_duration_display: 'Returning visitor — no training required',
+        sections_acknowledged: 0,
+        completion_speed: 'approved'
+    };
+    fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).catch(function(e) { console.error(e); });
+    document.getElementById('successMsg').style.display = 'block';
+    document.querySelector('#successMsg h2').textContent = 'Entry Approved';
+    document.querySelector('#successMsg p').textContent = 'Welcome back! Your check-in has been recorded.';
+    document.getElementById('durationDisplay').textContent = 'Returning visitor — no training required';
+}
+
+function quickConfirm() {
+    // Quick ack — log and show success
+    hideAllDecisionScreens();
+    var now = new Date();
+    var payload = {
+        site: currentSiteId,
+        site_name: currentSite.name,
+        date: now.toISOString().slice(0, 10),
+        time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        name: document.getElementById('contractorName').value.trim(),
+        company: document.getElementById('contractorCompany').value.trim(),
+        email: document.getElementById('contractorEmail').value.trim(),
+        phone: document.getElementById('contractorPhone').value.trim(),
+        visit_type: document.getElementById('visitType').value,
+        purpose: document.getElementById('visitPurpose').value.trim(),
+        acknowledged: 'Yes (quick confirm)',
+        received: now.toISOString(),
+        training_duration_seconds: 0,
+        training_duration_display: 'Quick confirmation of minor policy update',
+        sections_acknowledged: 0,
+        completion_speed: 'quick_confirm'
+    };
+    fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).catch(function(e) { console.error(e); });
+    document.getElementById('successMsg').style.display = 'block';
+    document.querySelector('#successMsg h2').textContent = 'Confirmation Recorded';
+    document.querySelector('#successMsg p').textContent = 'Thank you for acknowledging the policy updates.';
+    document.getElementById('durationDisplay').textContent = 'Quick confirmation completed';
+}
+
+function proceedToTraining() {
+    hideAllDecisionScreens();
+
     trainingStartTime = Date.now();
     sectionTimestamps = [];
 
-    // Calculate total steps: 1 (site) + 1 (evac map if exists) + 7 (corporate training)
+    // Calculate total steps: 1 (site) + 1 (evac map if exists) + training sections
     TOTAL_STEPS = 1 + (currentSite.evacuationMap ? 1 : 0) + TRAINING_SECTIONS.length;
 
     document.getElementById('identifySection').style.display = 'none';
