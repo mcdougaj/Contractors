@@ -74,7 +74,10 @@
             margin-bottom: 6px;
             color: #555;
         }
-        .form-group input[type="text"] {
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="tel"],
+        .form-group select {
             width: 100%;
             padding: 12px;
             border: 2px solid #ddd;
@@ -82,10 +85,23 @@
             font-size: 1rem;
             -webkit-appearance: none;
             transition: border-color 0.2s;
+            font-family: inherit;
         }
-        .form-group input[type="text"]:focus {
+        .form-group input[type="text"]:focus,
+        .form-group input[type="email"]:focus,
+        .form-group input[type="tel"]:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #1a5632;
+        }
+        .form-group select {
+            background: #fff;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 32px;
         }
         .site-display {
             background: #f0f7f2;
@@ -325,6 +341,30 @@
             <label for="contractorCompany">Company</label>
             <input type="text" id="contractorCompany" placeholder="Company name" required autocomplete="organization">
         </div>
+        <div class="form-group">
+            <label for="contractorEmail">Email Address</label>
+            <input type="email" id="contractorEmail" placeholder="you@company.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+            <label for="contractorPhone">Phone Number</label>
+            <input type="tel" id="contractorPhone" placeholder="(555) 555-0100" autocomplete="tel">
+        </div>
+        <div class="form-group">
+            <label for="visitType">Visit Type</label>
+            <select id="visitType">
+                <option value="">— Select —</option>
+                <option value="visitor">Visitor / Guest</option>
+                <option value="sales">Sales / Quote Visit</option>
+                <option value="walkthrough">Contractor - Walkthrough</option>
+                <option value="work">Contractor - Performing Work</option>
+                <option value="delivery">Delivery Driver</option>
+                <option value="inspector">Inspector / Auditor</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="visitPurpose">Purpose of Visit</label>
+            <input type="text" id="visitPurpose" placeholder="Brief description of visit">
+        </div>
         <button class="begin-btn" id="beginBtn" onclick="startTraining()">Begin Safety Training</button>
     </div>
 </div>
@@ -334,6 +374,31 @@
     <div id="stepsContainer"></div>
     <div class="submit-section" id="submitSection">
         <button class="submit-btn" id="submitBtn" onclick="submitForm()">Submit Check-In</button>
+    </div>
+</div>
+
+<!-- SPEED WARNING MODAL -->
+<div id="speedWarningOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;justify-content:center;align-items:center;">
+    <div style="background:#fff;border-radius:16px;max-width:420px;width:90%;margin:auto;overflow:hidden;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="background:#DC2626;padding:20px 24px;text-align:center;">
+            <div style="font-size:36px;margin-bottom:4px;">⚠️</div>
+            <h3 style="margin:0;color:#fff;font-size:18px;font-weight:700;">Please Review Your Training</h3>
+        </div>
+        <div style="padding:24px;">
+            <p id="speedWarningText" style="color:#374151;font-size:14px;line-height:1.6;margin:0 0 8px;"></p>
+            <p style="color:#6b7280;font-size:13px;line-height:1.5;margin:0 0 20px;">
+                Safety training is designed to protect you and everyone on site.
+                Please confirm you have read and understood each section.
+            </p>
+            <div style="display:flex;gap:10px;">
+                <button onclick="closeWarningAndReview()" style="flex:1;padding:12px;border:2px solid #1A5632;background:#fff;color:#1A5632;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">
+                    ← Go Back &amp; Review
+                </button>
+                <button onclick="closeWarningAndSubmit()" style="flex:1;padding:12px;border:none;background:#1A5632;color:#fff;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">
+                    I've Read Everything →
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -830,9 +895,14 @@ let currentSite = null;
 function startTraining() {
     var name = document.getElementById('contractorName').value.trim();
     var company = document.getElementById('contractorCompany').value.trim();
+    var visitType = document.getElementById('visitType').value;
 
     if (!name || !company) {
         alert('Please enter your name and company.');
+        return;
+    }
+    if (!visitType) {
+        alert('Please select a visit type.');
         return;
     }
 
@@ -956,9 +1026,16 @@ function updateProgress(completedSteps) {
 // ============================================================
 // SUBMIT
 // ============================================================
+var pendingPayload = null;
+var speedWarningAcknowledged = false;
+
 function submitForm() {
     var name = document.getElementById('contractorName').value.trim();
     var company = document.getElementById('contractorCompany').value.trim();
+    var email = document.getElementById('contractorEmail').value.trim();
+    var phone = document.getElementById('contractorPhone').value.trim();
+    var visitType = document.getElementById('visitType').value;
+    var visitPurpose = document.getElementById('visitPurpose').value.trim();
 
     var now = new Date();
     var dateStr = now.toISOString().slice(0, 10);
@@ -968,17 +1045,17 @@ function submitForm() {
     var durationDisplay = formatDuration(durationSeconds);
     var completionSpeed = durationSeconds < 180 ? 'suspicious' : (durationSeconds < 480 ? 'fast' : 'normal');
 
-    var btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.textContent = 'Submitting...';
-
-    var payload = {
+    pendingPayload = {
         site: currentSiteId,
         site_name: currentSite.name,
         date: dateStr,
         time: timeStr,
         name: name,
         company: company,
+        email: email,
+        phone: phone,
+        visit_type: visitType,
+        purpose: visitPurpose,
         acknowledged: 'Yes',
         received: now.toISOString(),
         training_duration_seconds: durationSeconds,
@@ -988,16 +1065,54 @@ function submitForm() {
         section_timestamps: sectionTimestamps
     };
 
+    // Show warning if training was completed too quickly
+    if ((completionSpeed === 'suspicious' || completionSpeed === 'fast') && !speedWarningAcknowledged) {
+        var warningText = '';
+        if (completionSpeed === 'suspicious') {
+            warningText = 'You completed the safety training in ' + durationDisplay +
+                '. This is significantly faster than the expected time to read and understand the material.';
+        } else {
+            warningText = 'You completed the safety training in ' + durationDisplay +
+                '. This is quicker than most contractors — please make sure you\'ve reviewed all sections carefully.';
+        }
+        document.getElementById('speedWarningText').textContent = warningText;
+        document.getElementById('speedWarningOverlay').style.display = 'block';
+        return;
+    }
+
+    sendPayload();
+}
+
+function closeWarningAndReview() {
+    document.getElementById('speedWarningOverlay').style.display = 'none';
+    pendingPayload = null;
+    // Scroll them back to the training sections
+    var trainingEl = document.getElementById('trainingSection');
+    if (trainingEl) trainingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeWarningAndSubmit() {
+    document.getElementById('speedWarningOverlay').style.display = 'none';
+    speedWarningAcknowledged = true;
+    sendPayload();
+}
+
+function sendPayload() {
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
     fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(pendingPayload)
     })
         .then(function(res) {
             if (!res.ok) throw new Error('HTTP ' + res.status);
             return res.json();
         })
         .then(function() {
+            var durationDisplay = pendingPayload.training_duration_display;
             document.getElementById('trainingSection').style.display = 'none';
             document.getElementById('progressContainer').style.display = 'none';
             document.getElementById('successMsg').style.display = 'block';
