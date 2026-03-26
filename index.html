@@ -682,47 +682,133 @@ function applyLanguage() {
 }
 
 // ============================================================
-// SITE DATA - Add/edit sites here
+// SITE DATA — fetched from Google Sheet on load
+// Sheet: "Contractor Check-In System" > "Site Config" tab
+// To add a site: add a row to the Sheet + print a QR code. No code changes needed.
 // ============================================================
-const SITES = {
-    'EVERETT01': {
-        name: 'Everett Yard',
-        address: '69 Rover Street, Everett, MA 02149',
-        evacuationMap: 'evacuation-map.png',
-        rallyPoints: {
-            en: `<h4>&#127987; Rally Points</h4><ul><li><strong>Primary Rally Point:</strong> National Trailer Parking Lot (at Main Gate)</li><li><strong>Secondary Rally Point:</strong> Employee Parking Lot (at Secondary Exit Ramp)</li></ul><h4>&#9888;&#65039; What to Do</h4><ul><li>Follow the red egress routes shown on the map above</li><li>Radio communication signals evacuation &mdash; listen for it</li><li>Report to the security guard house once at rally point</li><li><strong>Do NOT block the entrance</strong> &mdash; emergency vehicles need access</li><li>Do NOT leave the site until given the all-clear</li><li>If you cannot reach the primary rally point, proceed to the secondary rally point</li></ul>`,
-            es: `<h4>&#127987; Puntos de Reunión</h4><ul><li><strong>Punto de Reunión Principal:</strong> Estacionamiento de National Trailer (en la Puerta Principal)</li><li><strong>Punto de Reunión Secundario:</strong> Estacionamiento de Empleados (en la Rampa de Salida Secundaria)</li></ul><h4>&#9888;&#65039; Qué Hacer</h4><ul><li>Siga las rutas de salida rojas mostradas en el mapa</li><li>La comunicación por radio señala evacuación &mdash; esté atento</li><li>Repórtese en la caseta de seguridad al llegar al punto de reunión</li><li><strong>NO bloquee la entrada</strong> &mdash; los vehículos de emergencia necesitan acceso</li><li>NO abandone el sitio hasta recibir autorización</li><li>Si no puede llegar al punto de reunión principal, diríjase al secundario</li></ul>`
-        },
-        rules: {
-            en: `<h4>&#128205; Site Address</h4><p style="font-weight:600;">69 Rover Street, Everett, MA 02149</p><h4>&#128100; Site Contacts</h4><ul><li><strong>Main Site Contact:</strong> <em>(see posted signage)</em></li><li><strong>Alternative Contact:</strong> <em>(see posted signage)</em></li><li><strong>Environmental Contact:</strong> <em>(see posted signage)</em></li></ul><h4>&#129514; PPE Requirements</h4><ul><li>Hard hat required in all operational areas</li><li>Safety glasses required at all times</li><li>Steel-toed safety shoes required</li><li>Long pants (jeans or work pants) required</li><li>High-visibility vest in roadways, yards, and truck traffic areas</li><li>Gloves when handling sharp objects, heat, or chemicals</li><li>Ear plugs in noisy areas</li><li>Face shield required for grinding and welding</li><li>Dust masks available for dust and dirt protection</li></ul><h4>&#128664; Traffic &amp; Vehicle Rules</h4><ul><li>Maximum speed: 10 MPH on site</li><li>Keep safe distance from trucks, cranes, loaders, and mobile equipment</li><li>Stay visible to equipment operators at all times</li><li>Do not walk in operating area without OK from the operator</li><li>Never walk under raised buckets, elevated loads, or behind loaded trucks</li><li>Stay away from trucks dumping loads</li><li>Watch for operator blind spots (arm side of crane)</li><li>Never walk between rail cars</li></ul><h4>&#127987; Evacuation &amp; Rally Points</h4><ul><li><strong>Primary Rally Point:</strong> National Trailer Parking Lot (Main Gate)</li><li><strong>Secondary Rally Point:</strong> Employee Parking Lot (Secondary Exit Ramp)</li><li>Radio communication signals evacuation</li><li>Report to security guard house; do not block entrance</li><li>First aid kits and AEDs available on site</li></ul><h4>&#9888;&#65039; Emergency Procedures</h4><ul><li><strong>Emergency:</strong> 911</li><li>In case of fire, medical, or other emergency &mdash; contact supervisor/manager</li><li>If oil or chemical spill &mdash; notify site contact immediately; contain/stop flow if safe</li><li>Visitors and consultants must stay with site contact and go to designated assembly area</li><li>Do NOT leave the site without making a report</li></ul><h4>&#127811; Environmental Expectations</h4><ul><li>All waste disposals reviewed with site contact and Environmental Manager</li><li>Daily clean-up required at all work areas before leaving site</li><li>All chemicals must be approved through Radius Recycling EH&amp;S with SDS on file</li><li>Source control requirements must be followed when bringing material on site</li><li>Comply with all environmental laws, regulations, and company standards</li></ul>`,
-            es: `<h4>&#128205; Dirección del Sitio</h4><p style="font-weight:600;">69 Rover Street, Everett, MA 02149</p><h4>&#128100; Contactos del Sitio</h4><ul><li><strong>Contacto Principal:</strong> <em>(vea la señalización publicada)</em></li><li><strong>Contacto Alternativo:</strong> <em>(vea la señalización publicada)</em></li><li><strong>Contacto Ambiental:</strong> <em>(vea la señalización publicada)</em></li></ul><h4>&#129514; Requisitos de EPP</h4><ul><li>Casco requerido en todas las áreas operacionales</li><li>Lentes de seguridad requeridos en todo momento</li><li>Zapatos de seguridad con punta de acero requeridos</li><li>Pantalones largos (jeans o pantalones de trabajo) requeridos</li><li>Chaleco de alta visibilidad en caminos, patios y áreas de tráfico de camiones</li><li>Guantes al manejar objetos filosos, calor o químicos</li><li>Tapones para oídos en áreas ruidosas</li><li>Careta requerida para esmerilado y soldadura</li><li>Mascarillas disponibles para protección contra polvo y suciedad</li></ul><h4>&#128664; Reglas de Tráfico y Vehículos</h4><ul><li>Velocidad máxima: 10 MPH en el sitio</li><li>Mantenga distancia segura de camiones, grúas, cargadores y equipo móvil</li><li>Permanezca visible para los operadores de equipo en todo momento</li><li>No camine en el área de operación sin aprobación del operador</li><li>Nunca camine bajo cucharones elevados, cargas elevadas o detrás de camiones cargados</li><li>Manténgase alejado de camiones descargando</li><li>Esté atento a los puntos ciegos del operador (lado del brazo de la grúa)</li><li>Nunca camine entre vagones de tren</li></ul><h4>&#127987; Evacuación y Puntos de Reunión</h4><ul><li><strong>Punto Principal:</strong> Estacionamiento National Trailer (Puerta Principal)</li><li><strong>Punto Secundario:</strong> Estacionamiento de Empleados (Rampa de Salida Secundaria)</li><li>La comunicación por radio señala evacuación</li><li>Repórtese en la caseta de seguridad; no bloquee la entrada</li><li>Botiquines de primeros auxilios y DEA disponibles en el sitio</li></ul><h4>&#9888;&#65039; Procedimientos de Emergencia</h4><ul><li><strong>Emergencia:</strong> 911</li><li>En caso de incendio, emergencia médica u otra &mdash; contacte al supervisor/gerente</li><li>Si hay derrame de aceite o químico &mdash; notifique al contacto del sitio inmediatamente; contenga/detenga el flujo si es seguro</li><li>Los visitantes y consultores deben permanecer con el contacto del sitio e ir al área de reunión designada</li><li>NO abandone el sitio sin hacer un reporte</li></ul><h4>&#127811; Expectativas Ambientales</h4><ul><li>Toda eliminación de residuos revisada con contacto del sitio y Gerente Ambiental</li><li>Limpieza diaria requerida en todas las áreas de trabajo antes de salir del sitio</li><li>Todos los químicos deben ser aprobados por Radius Recycling EH&amp;S con HDS archivada</li><li>Los requisitos de control de fuentes deben seguirse al traer material al sitio</li><li>Cumpla con todas las leyes ambientales, regulaciones y estándares de la empresa</li></ul>`
+const SHEET_ID = '1aAuhdsFwVRXN439THZUNae53pzxPKGNiNFKiv95_uU8';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=Site%20Config';
+
+// Builds HTML rule list from semicolon-delimited string (e.g. "Hard hat; Safety vest; Steel-toe boots")
+function rulesListHTML(heading, emoji, semicolonStr) {
+    if (!semicolonStr) return '';
+    var items = semicolonStr.split(';').map(function(s){ return s.trim(); }).filter(Boolean);
+    if (!items.length) return '';
+    return '<h4>' + emoji + ' ' + heading + '</h4><ul>' + items.map(function(i){ return '<li>' + i + '</li>'; }).join('') + '</ul>';
+}
+
+// Convert a Sheet row into the site config object the page expects
+function buildSiteFromRow(row) {
+    var site = {
+        name: row.SiteName || '',
+        address: row.Address || '',
+        evacuationMap: row.EvacuationMapURL || '',
+        mainContact: row.MainContact || '',
+        mainContactPhone: row.MainContactPhone || '',
+        emergencyPhone: row.EmergencyPhone || '911',
+        policyLastUpdated: row.PolicyLastUpdated || '',
+        reackDays: parseInt(row.ReackDays) || 365,
+        policyChangeType: row.PolicyChangeType || 'none'
+    };
+    // Build bilingual rules HTML from Sheet columns
+    site.rules = {
+        en: rulesListHTML('PPE Requirements', '&#129514;', row.PPERules)
+          + rulesListHTML('Environmental Rules', '&#127811;', row.EnvironmentalRules)
+          + rulesListHTML('Traffic &amp; Hazard Zones', '&#128664;', row.TrafficRules)
+          + '<h4>&#9888;&#65039; Emergency Contact</h4><ul>'
+          + (row.MainContact ? '<li><strong>Site Contact:</strong> ' + row.MainContact + (row.MainContactPhone ? ' — ' + row.MainContactPhone : '') + '</li>' : '')
+          + '<li><strong>Emergency:</strong> ' + (row.EmergencyPhone || '911') + '</li></ul>',
+        es: rulesListHTML('Requisitos de EPP', '&#129514;', row.PPERules_ES || row.PPERules)
+          + rulesListHTML('Reglas Ambientales', '&#127811;', row.EnvironmentalRules_ES || row.EnvironmentalRules)
+          + rulesListHTML('Tráfico y Zonas de Peligro', '&#128664;', row.TrafficRules_ES || row.TrafficRules)
+          + '<h4>&#9888;&#65039; Contacto de Emergencia</h4><ul>'
+          + (row.MainContact ? '<li><strong>Contacto del Sitio:</strong> ' + row.MainContact + (row.MainContactPhone ? ' — ' + row.MainContactPhone : '') + '</li>' : '')
+          + '<li><strong>Emergencia:</strong> ' + (row.EmergencyPhone || '911') + '</li></ul>'
+    };
+    // Rally points
+    if (row.RallyPointInfo) {
+        site.rallyPoints = {
+            en: rulesListHTML('Rally Points', '&#127987;', row.RallyPointInfo),
+            es: rulesListHTML('Puntos de Reunión', '&#127987;', row.RallyPointInfo_ES || row.RallyPointInfo)
+        };
+    }
+    return site;
+}
+
+// Parse CSV text into array of objects (handles quoted fields with commas)
+function parseCSV(text) {
+    var lines = text.split('\n');
+    if (lines.length < 2) return [];
+    // Parse header
+    var headers = parseCSVLine(lines[0]);
+    var results = [];
+    for (var i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        var values = parseCSVLine(lines[i]);
+        var obj = {};
+        for (var j = 0; j < headers.length; j++) {
+            obj[headers[j].replace(/"/g, '').trim()] = (values[j] || '').replace(/^"|"$/g, '').trim();
         }
-    },
-    'AIKEN01': {
-        name: 'Aiken Yard',
-        address: 'Aiken, SC',
-        rules: {
-            en: `<h4>&#129514; PPE Requirements</h4><ul><li>Hard hat required in all operational areas</li><li>Steel-toed boots required</li><li>High-visibility vest required</li><li>Safety glasses required</li></ul><h4>&#127811; Environmental Rules</h4><ul><li>No discharge of any materials to storm drains</li><li>Report any spills immediately to site manager</li><li>Follow posted dust control procedures</li></ul><h4>&#128664; Traffic &amp; Hazard Zones</h4><ul><li>Maximum speed: 10 MPH on site</li><li>Yield to all heavy equipment</li><li>Stay within marked pedestrian zones</li></ul><h4>&#9888;&#65039; Emergency Contact</h4><ul><li>Site Manager: (803) 555-0100</li><li>Emergency: 911</li></ul>`,
-            es: `<h4>&#129514; Requisitos de EPP</h4><ul><li>Casco requerido en todas las áreas operacionales</li><li>Botas con punta de acero requeridas</li><li>Chaleco de alta visibilidad requerido</li><li>Lentes de seguridad requeridos</li></ul><h4>&#127811; Reglas Ambientales</h4><ul><li>No descargue materiales en los desagües pluviales</li><li>Reporte cualquier derrame inmediatamente al gerente del sitio</li><li>Siga los procedimientos de control de polvo publicados</li></ul><h4>&#128664; Tráfico y Zonas de Peligro</h4><ul><li>Velocidad máxima: 10 MPH en el sitio</li><li>Ceda el paso a todo equipo pesado</li><li>Permanezca dentro de las zonas peatonales marcadas</li></ul><h4>&#9888;&#65039; Contacto de Emergencia</h4><ul><li>Gerente del Sitio: (803) 555-0100</li><li>Emergencia: 911</li></ul>`
-        }
-    },
-    'AUGUSTA01': {
-        name: 'Augusta Yard',
-        address: 'Augusta, GA',
-        rules: {
-            en: `<h4>&#129514; PPE Requirements</h4><ul><li>Hard hat required in all operational areas</li><li>Steel-toed boots required</li><li>High-visibility vest required</li><li>Hearing protection in marked zones</li></ul><h4>&#127811; Environmental Rules</h4><ul><li>All containers must be properly labeled</li><li>No open burning permitted</li><li>Report any environmental concerns to site manager</li></ul><h4>&#128664; Traffic &amp; Hazard Zones</h4><ul><li>Maximum speed: 10 MPH on site</li><li>One-way traffic flow - follow posted signs</li><li>No pedestrian access to shredder area</li></ul><h4>&#9888;&#65039; Emergency Contact</h4><ul><li>Site Manager: (706) 555-0200</li><li>Emergency: 911</li></ul>`,
-            es: `<h4>&#129514; Requisitos de EPP</h4><ul><li>Casco requerido en todas las áreas operacionales</li><li>Botas con punta de acero requeridas</li><li>Chaleco de alta visibilidad requerido</li><li>Protección auditiva en zonas marcadas</li></ul><h4>&#127811; Reglas Ambientales</h4><ul><li>Todos los contenedores deben estar debidamente etiquetados</li><li>No se permite quema al aire libre</li><li>Reporte cualquier preocupación ambiental al gerente del sitio</li></ul><h4>&#128664; Tráfico y Zonas de Peligro</h4><ul><li>Velocidad máxima: 10 MPH en el sitio</li><li>Flujo de tráfico en un solo sentido - siga las señales</li><li>Sin acceso peatonal al área de la trituradora</li></ul><h4>&#9888;&#65039; Contacto de Emergencia</h4><ul><li>Gerente del Sitio: (706) 555-0200</li><li>Emergencia: 911</li></ul>`
-        }
-    },
-    'MACON01': {
-        name: 'Macon Yard',
-        address: 'Macon, GA',
-        rules: {
-            en: `<h4>&#129514; PPE Requirements</h4><ul><li>Hard hat required in all operational areas</li><li>Steel-toed boots required</li><li>High-visibility vest required</li></ul><h4>&#127811; Environmental Rules</h4><ul><li>Stormwater BMPs must be maintained</li><li>No idling over 5 minutes</li><li>Report any fluid leaks immediately</li></ul><h4>&#128664; Traffic &amp; Hazard Zones</h4><ul><li>Maximum speed: 10 MPH on site</li><li>Check in at scale house before proceeding</li></ul><h4>&#9888;&#65039; Emergency Contact</h4><ul><li>Site Manager: (478) 555-0300</li><li>Emergency: 911</li></ul>`,
-            es: `<h4>&#129514; Requisitos de EPP</h4><ul><li>Casco requerido en todas las áreas operacionales</li><li>Botas con punta de acero requeridas</li><li>Chaleco de alta visibilidad requerido</li></ul><h4>&#127811; Reglas Ambientales</h4><ul><li>Las BMPs de aguas pluviales deben mantenerse</li><li>No se permite ralentí por más de 5 minutos</li><li>Reporte cualquier fuga de fluidos inmediatamente</li></ul><h4>&#128664; Tráfico y Zonas de Peligro</h4><ul><li>Velocidad máxima: 10 MPH en el sitio</li><li>Regístrese en la caseta de la báscula antes de continuar</li></ul><h4>&#9888;&#65039; Contacto de Emergencia</h4><ul><li>Gerente del Sitio: (478) 555-0300</li><li>Emergencia: 911</li></ul>`
+        results.push(obj);
+    }
+    return results;
+}
+
+function parseCSVLine(line) {
+    var result = [];
+    var current = '';
+    var inQuotes = false;
+    for (var i = 0; i < line.length; i++) {
+        var ch = line[i];
+        if (ch === '"') {
+            if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+                current += '"';
+                i++;
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (ch === ',' && !inQuotes) {
+            result.push(current);
+            current = '';
+        } else {
+            current += ch;
         }
     }
+    result.push(current);
+    return result;
+}
+
+// SITES will be populated from Sheet; start empty
+var SITES = {};
+
+// Evacuation map overrides (local images not in the Sheet)
+var EVAC_MAP_OVERRIDES = {
+    'EVERETT01': 'evacuation-map.png'
 };
+
+// Fetch site data from Google Sheet and populate SITES
+function loadSiteData(callback) {
+    fetch(SHEET_CSV_URL)
+        .then(function(res) { return res.text(); })
+        .then(function(csv) {
+            var rows = parseCSV(csv);
+            rows.forEach(function(row) {
+                var code = (row.SiteCode || '').trim().toUpperCase();
+                if (!code) return;
+                var site = buildSiteFromRow(row);
+                // Apply evacuation map override if exists
+                if (EVAC_MAP_OVERRIDES[code]) {
+                    site.evacuationMap = EVAC_MAP_OVERRIDES[code];
+                }
+                SITES[code] = site;
+            });
+            if (callback) callback(true);
+        })
+        .catch(function(err) {
+            console.error('Failed to load site data from Sheet:', err);
+            if (callback) callback(false);
+        });
+}
 
 // ============================================================
 // TRAINING SECTIONS (Corporate-wide, from Safety Orientation
@@ -1214,21 +1300,34 @@ let currentSite = null;
 (function init() {
     const params = new URLSearchParams(window.location.search);
     currentSiteId = (params.get('site') || '').toUpperCase();
-    currentSite = SITES[currentSiteId];
 
-    if (currentSite) {
-        document.getElementById('siteName').textContent = currentSite.name + ' (' + currentSiteId + ')';
-        document.getElementById('siteDisplay').innerHTML =
-            '<div>' + currentSite.name + ' (' + currentSiteId + ')</div>' +
-            '<div class="site-address">' + currentSite.address + '</div>';
-    } else {
-        document.getElementById('siteName').textContent = currentSiteId || 'Unknown Site';
-        document.getElementById('siteDisplay').innerHTML =
-            '<div style="color:#c00;">' + (currentSiteId || 'No site specified') + '</div>' +
-            '<div class="site-address" style="color:#c00;">Site not recognized. Please verify the QR code.</div>';
-        document.getElementById('beginBtn').disabled = true;
-        document.getElementById('beginBtn').style.background = '#ccc';
-    }
+    // Show loading state
+    document.getElementById('siteName').textContent = 'Loading...';
+    document.getElementById('siteDisplay').innerHTML = '<div>Loading site data...</div>';
+    document.getElementById('beginBtn').disabled = true;
+    document.getElementById('beginBtn').style.background = '#ccc';
+
+    // Fetch site data from Google Sheet, then initialize
+    loadSiteData(function(success) {
+        currentSite = SITES[currentSiteId];
+
+        if (currentSite) {
+            document.getElementById('siteName').textContent = currentSite.name + ' (' + currentSiteId + ')';
+            document.getElementById('siteDisplay').innerHTML =
+                '<div>' + currentSite.name + ' (' + currentSiteId + ')</div>' +
+                '<div class="site-address">' + currentSite.address + '</div>';
+            document.getElementById('beginBtn').disabled = false;
+            document.getElementById('beginBtn').style.background = '';
+        } else {
+            document.getElementById('siteName').textContent = currentSiteId || 'Unknown Site';
+            document.getElementById('siteDisplay').innerHTML =
+                '<div style="color:#c00;">' + (currentSiteId || 'No site specified') + '</div>' +
+                '<div class="site-address" style="color:#c00;">' +
+                (success ? 'Site not found in database. Please verify the QR code.' : 'Could not load site data. Please check your connection.') +
+                '</div>';
+        }
+        applyLanguage();
+    });
 })();
 
 // ============================================================
