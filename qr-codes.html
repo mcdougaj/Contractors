@@ -13,82 +13,47 @@
             color: #333;
             padding: 20px;
         }
-        h1 {
-            text-align: center;
-            margin-bottom: 8px;
-            font-size: 1.5rem;
+        h1 { text-align: center; margin-bottom: 8px; font-size: 1.5rem; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 12px; font-size: 0.9rem; }
+        .search-bar {
+            max-width: 400px; margin: 0 auto 20px; display: flex; gap: 8px;
         }
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 0.9rem;
+        .search-bar input {
+            flex: 1; padding: 10px 14px; border: 2px solid #ddd; border-radius: 8px;
+            font-size: 0.95rem; outline: none;
+        }
+        .search-bar input:focus { border-color: #1a5632; }
+        .site-count {
+            text-align: center; font-size: 0.85rem; color: #888; margin-bottom: 16px;
         }
         .cards {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            justify-content: center;
+            display: flex; flex-wrap: wrap; gap: 24px; justify-content: center;
         }
         .card {
-            border: 2px solid #1a5632;
-            border-radius: 12px;
-            padding: 24px;
-            width: 300px;
-            text-align: center;
-            page-break-inside: avoid;
+            border: 2px solid #1a5632; border-radius: 12px; padding: 24px;
+            width: 300px; text-align: center; page-break-inside: avoid;
         }
-        .card .site-name {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #1a5632;
-            margin-bottom: 4px;
-        }
-        .card .site-id {
-            font-size: 0.85rem;
-            color: #888;
-            margin-bottom: 16px;
-        }
-        .card .qr {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 16px;
-        }
-        .card .qr img, .card .qr canvas {
-            width: 200px;
-            height: 200px;
-        }
+        .card .site-name { font-size: 1.2rem; font-weight: 700; color: #1a5632; margin-bottom: 4px; }
+        .card .site-id { font-size: 0.85rem; color: #888; margin-bottom: 4px; }
+        .card .site-address { font-size: 0.75rem; color: #999; margin-bottom: 12px; }
+        .card .qr { display: flex; justify-content: center; margin-bottom: 16px; }
+        .card .qr img { width: 200px; height: 200px; }
         .card .instructions {
-            font-size: 0.8rem;
-            color: #666;
-            line-height: 1.4;
-            border-top: 1px solid #eee;
-            padding-top: 12px;
+            font-size: 0.8rem; color: #666; line-height: 1.4;
+            border-top: 1px solid #eee; padding-top: 12px;
         }
-        .card .url {
-            font-size: 0.65rem;
-            color: #aaa;
-            margin-top: 8px;
-            word-break: break-all;
-        }
+        .card .url { font-size: 0.65rem; color: #aaa; margin-top: 8px; word-break: break-all; }
+        .loading { text-align: center; padding: 40px; color: #888; font-size: 1.1rem; }
         @media print {
             body { padding: 0; }
-            .no-print { display: none; }
+            .no-print { display: none !important; }
             .cards { gap: 40px; }
             .card { border-width: 1px; }
         }
-        .no-print {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        .no-print { text-align: center; margin-bottom: 20px; }
         .print-btn {
-            padding: 10px 24px;
-            background: #1a5632;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
+            padding: 10px 24px; background: #1a5632; color: #fff; border: none;
+            border-radius: 8px; font-size: 1rem; cursor: pointer;
         }
         .print-btn:hover { background: #0f3d20; }
     </style>
@@ -99,51 +64,113 @@
 <p class="subtitle">Print and post at each site entrance</p>
 
 <div class="no-print">
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search sites..." oninput="filterSites()">
+    </div>
     <button class="print-btn" onclick="window.print()">Print QR Codes</button>
 </div>
 
-<div class="cards" id="cards"></div>
+<div class="site-count no-print" id="siteCount"></div>
+<div class="cards" id="cards"><div class="loading" id="loading">Loading sites from database...</div></div>
 
 <script>
-// ============================================================
-// CONFIG — Update BASE_URL after GitHub Pages is live
-// ============================================================
 const BASE_URL = 'https://mcdougaj.github.io/Contractors/';
+const SHEET_ID = '1aAuhdsFwVRXN439THZUNae53pzxPKGNiNFKiv95_uU8';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=Site%20Config';
 
-const SITES = [
-    { id: 'EVERETT01', name: 'Everett Yard' },
-    { id: 'AIKEN01',   name: 'Aiken Yard' },
-    { id: 'AUGUSTA01', name: 'Augusta Yard' },
-    { id: 'MACON01',   name: 'Macon Yard' }
-];
+var allSites = [];
 
-function generateQR(text, size) {
-    const qr = qrcode(0, 'M');
+function parseCSV(text) {
+    var lines = text.split('\n');
+    if (lines.length < 2) return [];
+    var headers = parseCSVLine(lines[0]);
+    var results = [];
+    for (var i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        var values = parseCSVLine(lines[i]);
+        var obj = {};
+        for (var j = 0; j < headers.length; j++) {
+            obj[headers[j].replace(/"/g, '').trim()] = (values[j] || '').replace(/^"|"$/g, '').trim();
+        }
+        results.push(obj);
+    }
+    return results;
+}
+
+function parseCSVLine(line) {
+    var result = [], current = '', inQuotes = false;
+    for (var i = 0; i < line.length; i++) {
+        var ch = line[i];
+        if (ch === '"') {
+            if (inQuotes && i + 1 < line.length && line[i + 1] === '"') { current += '"'; i++; }
+            else { inQuotes = !inQuotes; }
+        } else if (ch === ',' && !inQuotes) { result.push(current); current = ''; }
+        else { current += ch; }
+    }
+    result.push(current);
+    return result;
+}
+
+function generateQR(text) {
+    var qr = qrcode(0, 'M');
     qr.addData(text);
     qr.make();
     return qr.createDataURL(10, 4);
 }
 
-const container = document.getElementById('cards');
+function renderSites(sites) {
+    var container = document.getElementById('cards');
+    container.innerHTML = '';
+    document.getElementById('siteCount').textContent = sites.length + ' site' + (sites.length !== 1 ? 's' : '');
 
-SITES.forEach(site => {
-    const url = BASE_URL + '?site=' + site.id;
-    const imgSrc = generateQR(url, 200);
+    sites.forEach(function(site) {
+        var url = BASE_URL + '?site=' + site.id;
+        var imgSrc = generateQR(url);
+        var card = document.createElement('div');
+        card.className = 'card';
+        card.setAttribute('data-search', (site.name + ' ' + site.id + ' ' + site.address).toLowerCase());
+        card.innerHTML =
+            '<div class="site-name">' + site.name + '</div>' +
+            '<div class="site-id">' + site.id + '</div>' +
+            '<div class="site-address">' + site.address + '</div>' +
+            '<div class="qr"><img src="' + imgSrc + '" alt="QR Code for ' + site.name + '"></div>' +
+            '<div class="instructions">Scan with your phone camera to complete<br>the Contractor Safety Check-In</div>' +
+            '<div class="url">' + url + '</div>';
+        container.appendChild(card);
+    });
+}
 
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-        <div class="site-name">${site.name}</div>
-        <div class="site-id">${site.id}</div>
-        <div class="qr"><img src="${imgSrc}" alt="QR Code for ${site.name}"></div>
-        <div class="instructions">
-            Scan with your phone camera to complete<br>
-            the Contractor Safety Check-In
-        </div>
-        <div class="url">${url}</div>
-    `;
-    container.appendChild(card);
-});
+function filterSites() {
+    var query = document.getElementById('searchInput').value.toLowerCase().trim();
+    if (!query) {
+        renderSites(allSites);
+        return;
+    }
+    var filtered = allSites.filter(function(s) {
+        return s.name.toLowerCase().indexOf(query) !== -1 ||
+               s.id.toLowerCase().indexOf(query) !== -1 ||
+               s.address.toLowerCase().indexOf(query) !== -1;
+    });
+    renderSites(filtered);
+}
+
+// Fetch sites from Google Sheet
+fetch(SHEET_CSV_URL)
+    .then(function(res) { return res.text(); })
+    .then(function(csv) {
+        var rows = parseCSV(csv);
+        allSites = rows
+            .filter(function(r) { return r.SiteCode && r.Active !== 'FALSE'; })
+            .map(function(r) {
+                return { id: r.SiteCode.trim().toUpperCase(), name: r.SiteName || r.SiteCode, address: r.Address || '' };
+            })
+            .sort(function(a, b) { return a.name.localeCompare(b.name); });
+        renderSites(allSites);
+    })
+    .catch(function(err) {
+        document.getElementById('loading').textContent = 'Failed to load sites. Check that the Google Sheet is shared as "Anyone with the link".';
+        console.error(err);
+    });
 </script>
 
 </body>
