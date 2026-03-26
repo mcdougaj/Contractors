@@ -652,6 +652,33 @@ function applyLanguage() {
     });
     // Update html lang attribute
     document.documentElement.lang = (currentLang === 'es') ? 'es' : 'en';
+    // Re-render training steps if training is visible (swaps all literature)
+    var trainingEl = document.getElementById('trainingSection');
+    if (trainingEl && trainingEl.style.display !== 'none' && currentSite) {
+        // Save which steps are completed
+        var completedSteps = [];
+        document.querySelectorAll('.step.completed').forEach(function(el) {
+            completedSteps.push(parseInt(el.getAttribute('data-step')));
+        });
+        // Re-render
+        renderSteps();
+        // Restore completed states
+        completedSteps.forEach(function(n) {
+            var stepEl = document.getElementById('step' + n);
+            if (stepEl) {
+                stepEl.classList.add('completed');
+                stepEl.classList.remove('locked');
+                var num = document.getElementById('stepNum' + n);
+                if (num) num.innerHTML = '&#10003;';
+                var cb = document.getElementById('ack' + n);
+                if (cb) { cb.checked = true; cb.disabled = true; }
+            }
+        });
+        // Unlock the next step after last completed
+        var maxCompleted = completedSteps.length > 0 ? Math.max.apply(null, completedSteps) : 0;
+        var nextUnlock = document.getElementById('step' + (maxCompleted + 1));
+        if (nextUnlock) nextUnlock.classList.remove('locked');
+    }
 }
 
 // ============================================================
@@ -662,173 +689,38 @@ const SITES = {
         name: 'Everett Yard',
         address: '69 Rover Street, Everett, MA 02149',
         evacuationMap: 'evacuation-map.png',
-        rallyPoints: `
-            <h4>&#127987; Rally Points</h4>
-            <ul>
-                <li><strong>Primary Rally Point:</strong> National Trailer Parking Lot (at Main Gate)</li>
-                <li><strong>Secondary Rally Point:</strong> Employee Parking Lot (at Secondary Exit Ramp)</li>
-            </ul>
-            <h4>&#9888;&#65039; What to Do</h4>
-            <ul>
-                <li>Follow the red egress routes shown on the map above</li>
-                <li>Radio communication signals evacuation &mdash; listen for it</li>
-                <li>Report to the security guard house once at rally point</li>
-                <li><strong>Do NOT block the entrance</strong> &mdash; emergency vehicles need access</li>
-                <li>Do NOT leave the site until given the all-clear</li>
-                <li>If you cannot reach the primary rally point, proceed to the secondary rally point</li>
-            </ul>
-        `,
-        rules: `
-            <h4>&#128205; Site Address</h4>
-            <p style="font-weight:600;">69 Rover Street, Everett, MA 02149</p>
-
-            <h4>&#128100; Site Contacts</h4>
-            <ul>
-                <li><strong>Main Site Contact:</strong> <em>(see posted signage)</em></li>
-                <li><strong>Alternative Contact:</strong> <em>(see posted signage)</em></li>
-                <li><strong>Environmental Contact:</strong> <em>(see posted signage)</em></li>
-            </ul>
-
-            <h4>&#129514; PPE Requirements</h4>
-            <ul>
-                <li>Hard hat required in all operational areas</li>
-                <li>Safety glasses required at all times</li>
-                <li>Steel-toed safety shoes required</li>
-                <li>Long pants (jeans or work pants) required</li>
-                <li>High-visibility vest in roadways, yards, and truck traffic areas</li>
-                <li>Gloves when handling sharp objects, heat, or chemicals</li>
-                <li>Ear plugs in noisy areas</li>
-                <li>Face shield required for grinding and welding</li>
-                <li>Dust masks available for dust and dirt protection</li>
-            </ul>
-
-            <h4>&#128664; Traffic &amp; Vehicle Rules</h4>
-            <ul>
-                <li>Maximum speed: 10 MPH on site</li>
-                <li>Keep safe distance from trucks, cranes, loaders, and mobile equipment</li>
-                <li>Stay visible to equipment operators at all times</li>
-                <li>Do not walk in operating area without OK from the operator</li>
-                <li>Never walk under raised buckets, elevated loads, or behind loaded trucks</li>
-                <li>Stay away from trucks dumping loads</li>
-                <li>Watch for operator blind spots (arm side of crane)</li>
-                <li>Never walk between rail cars</li>
-            </ul>
-
-            <h4>&#127987; Evacuation &amp; Rally Points</h4>
-            <ul>
-                <li><strong>Primary Rally Point:</strong> National Trailer Parking Lot (Main Gate)</li>
-                <li><strong>Secondary Rally Point:</strong> Employee Parking Lot (Secondary Exit Ramp)</li>
-                <li>Radio communication signals evacuation</li>
-                <li>Report to security guard house; do not block entrance</li>
-                <li>First aid kits and AEDs available on site</li>
-            </ul>
-
-            <h4>&#9888;&#65039; Emergency Procedures</h4>
-            <ul>
-                <li><strong>Emergency:</strong> 911</li>
-                <li>In case of fire, medical, or other emergency &mdash; contact supervisor/manager</li>
-                <li>If oil or chemical spill &mdash; notify site contact immediately; contain/stop flow if safe</li>
-                <li>Visitors and consultants must stay with site contact and go to designated assembly area</li>
-                <li>Do NOT leave the site without making a report</li>
-            </ul>
-
-            <h4>&#127811; Environmental Expectations</h4>
-            <ul>
-                <li>All waste disposals reviewed with site contact and Environmental Manager</li>
-                <li>Daily clean-up required at all work areas before leaving site</li>
-                <li>All chemicals must be approved through Radius Recycling EH&amp;S with SDS on file</li>
-                <li>Source control requirements must be followed when bringing material on site</li>
-                <li>Comply with all environmental laws, regulations, and company standards</li>
-            </ul>
-        `
+        rallyPoints: {
+            en: `<h4>&#127987; Rally Points</h4><ul><li><strong>Primary Rally Point:</strong> National Trailer Parking Lot (at Main Gate)</li><li><strong>Secondary Rally Point:</strong> Employee Parking Lot (at Secondary Exit Ramp)</li></ul><h4>&#9888;&#65039; What to Do</h4><ul><li>Follow the red egress routes shown on the map above</li><li>Radio communication signals evacuation &mdash; listen for it</li><li>Report to the security guard house once at rally point</li><li><strong>Do NOT block the entrance</strong> &mdash; emergency vehicles need access</li><li>Do NOT leave the site until given the all-clear</li><li>If you cannot reach the primary rally point, proceed to the secondary rally point</li></ul>`,
+            es: `<h4>&#127987; Puntos de Reunión</h4><ul><li><strong>Punto de Reunión Principal:</strong> Estacionamiento de National Trailer (en la Puerta Principal)</li><li><strong>Punto de Reunión Secundario:</strong> Estacionamiento de Empleados (en la Rampa de Salida Secundaria)</li></ul><h4>&#9888;&#65039; Qué Hacer</h4><ul><li>Siga las rutas de salida rojas mostradas en el mapa</li><li>La comunicación por radio señala evacuación &mdash; esté atento</li><li>Repórtese en la caseta de seguridad al llegar al punto de reunión</li><li><strong>NO bloquee la entrada</strong> &mdash; los vehículos de emergencia necesitan acceso</li><li>NO abandone el sitio hasta recibir autorización</li><li>Si no puede llegar al punto de reunión principal, diríjase al secundario</li></ul>`
+        },
+        rules: {
+            en: `<h4>&#128205; Site Address</h4><p style="font-weight:600;">69 Rover Street, Everett, MA 02149</p><h4>&#128100; Site Contacts</h4><ul><li><strong>Main Site Contact:</strong> <em>(see posted signage)</em></li><li><strong>Alternative Contact:</strong> <em>(see posted signage)</em></li><li><strong>Environmental Contact:</strong> <em>(see posted signage)</em></li></ul><h4>&#129514; PPE Requirements</h4><ul><li>Hard hat required in all operational areas</li><li>Safety glasses required at all times</li><li>Steel-toed safety shoes required</li><li>Long pants (jeans or work pants) required</li><li>High-visibility vest in roadways, yards, and truck traffic areas</li><li>Gloves when handling sharp objects, heat, or chemicals</li><li>Ear plugs in noisy areas</li><li>Face shield required for grinding and welding</li><li>Dust masks available for dust and dirt protection</li></ul><h4>&#128664; Traffic &amp; Vehicle Rules</h4><ul><li>Maximum speed: 10 MPH on site</li><li>Keep safe distance from trucks, cranes, loaders, and mobile equipment</li><li>Stay visible to equipment operators at all times</li><li>Do not walk in operating area without OK from the operator</li><li>Never walk under raised buckets, elevated loads, or behind loaded trucks</li><li>Stay away from trucks dumping loads</li><li>Watch for operator blind spots (arm side of crane)</li><li>Never walk between rail cars</li></ul><h4>&#127987; Evacuation &amp; Rally Points</h4><ul><li><strong>Primary Rally Point:</strong> National Trailer Parking Lot (Main Gate)</li><li><strong>Secondary Rally Point:</strong> Employee Parking Lot (Secondary Exit Ramp)</li><li>Radio communication signals evacuation</li><li>Report to security guard house; do not block entrance</li><li>First aid kits and AEDs available on site</li></ul><h4>&#9888;&#65039; Emergency Procedures</h4><ul><li><strong>Emergency:</strong> 911</li><li>In case of fire, medical, or other emergency &mdash; contact supervisor/manager</li><li>If oil or chemical spill &mdash; notify site contact immediately; contain/stop flow if safe</li><li>Visitors and consultants must stay with site contact and go to designated assembly area</li><li>Do NOT leave the site without making a report</li></ul><h4>&#127811; Environmental Expectations</h4><ul><li>All waste disposals reviewed with site contact and Environmental Manager</li><li>Daily clean-up required at all work areas before leaving site</li><li>All chemicals must be approved through Radius Recycling EH&amp;S with SDS on file</li><li>Source control requirements must be followed when bringing material on site</li><li>Comply with all environmental laws, regulations, and company standards</li></ul>`,
+            es: `<h4>&#128205; Dirección del Sitio</h4><p style="font-weight:600;">69 Rover Street, Everett, MA 02149</p><h4>&#128100; Contactos del Sitio</h4><ul><li><strong>Contacto Principal:</strong> <em>(vea la señalización publicada)</em></li><li><strong>Contacto Alternativo:</strong> <em>(vea la señalización publicada)</em></li><li><strong>Contacto Ambiental:</strong> <em>(vea la señalización publicada)</em></li></ul><h4>&#129514; Requisitos de EPP</h4><ul><li>Casco requerido en todas las áreas operacionales</li><li>Lentes de seguridad requeridos en todo momento</li><li>Zapatos de seguridad con punta de acero requeridos</li><li>Pantalones largos (jeans o pantalones de trabajo) requeridos</li><li>Chaleco de alta visibilidad en caminos, patios y áreas de tráfico de camiones</li><li>Guantes al manejar objetos filosos, calor o químicos</li><li>Tapones para oídos en áreas ruidosas</li><li>Careta requerida para esmerilado y soldadura</li><li>Mascarillas disponibles para protección contra polvo y suciedad</li></ul><h4>&#128664; Reglas de Tráfico y Vehículos</h4><ul><li>Velocidad máxima: 10 MPH en el sitio</li><li>Mantenga distancia segura de camiones, grúas, cargadores y equipo móvil</li><li>Permanezca visible para los operadores de equipo en todo momento</li><li>No camine en el área de operación sin aprobación del operador</li><li>Nunca camine bajo cucharones elevados, cargas elevadas o detrás de camiones cargados</li><li>Manténgase alejado de camiones descargando</li><li>Esté atento a los puntos ciegos del operador (lado del brazo de la grúa)</li><li>Nunca camine entre vagones de tren</li></ul><h4>&#127987; Evacuación y Puntos de Reunión</h4><ul><li><strong>Punto Principal:</strong> Estacionamiento National Trailer (Puerta Principal)</li><li><strong>Punto Secundario:</strong> Estacionamiento de Empleados (Rampa de Salida Secundaria)</li><li>La comunicación por radio señala evacuación</li><li>Repórtese en la caseta de seguridad; no bloquee la entrada</li><li>Botiquines de primeros auxilios y DEA disponibles en el sitio</li></ul><h4>&#9888;&#65039; Procedimientos de Emergencia</h4><ul><li><strong>Emergencia:</strong> 911</li><li>En caso de incendio, emergencia médica u otra &mdash; contacte al supervisor/gerente</li><li>Si hay derrame de aceite o químico &mdash; notifique al contacto del sitio inmediatamente; contenga/detenga el flujo si es seguro</li><li>Los visitantes y consultores deben permanecer con el contacto del sitio e ir al área de reunión designada</li><li>NO abandone el sitio sin hacer un reporte</li></ul><h4>&#127811; Expectativas Ambientales</h4><ul><li>Toda eliminación de residuos revisada con contacto del sitio y Gerente Ambiental</li><li>Limpieza diaria requerida en todas las áreas de trabajo antes de salir del sitio</li><li>Todos los químicos deben ser aprobados por Radius Recycling EH&amp;S con HDS archivada</li><li>Los requisitos de control de fuentes deben seguirse al traer material al sitio</li><li>Cumpla con todas las leyes ambientales, regulaciones y estándares de la empresa</li></ul>`
+        }
     },
     'AIKEN01': {
         name: 'Aiken Yard',
         address: 'Aiken, SC',
-        rules: `
-            <h4>&#129514; PPE Requirements</h4>
-            <ul>
-                <li>Hard hat required in all operational areas</li>
-                <li>Steel-toed boots required</li>
-                <li>High-visibility vest required</li>
-                <li>Safety glasses required</li>
-            </ul>
-            <h4>&#127811; Environmental Rules</h4>
-            <ul>
-                <li>No discharge of any materials to storm drains</li>
-                <li>Report any spills immediately to site manager</li>
-                <li>Follow posted dust control procedures</li>
-            </ul>
-            <h4>&#128664; Traffic &amp; Hazard Zones</h4>
-            <ul>
-                <li>Maximum speed: 10 MPH on site</li>
-                <li>Yield to all heavy equipment</li>
-                <li>Stay within marked pedestrian zones</li>
-            </ul>
-            <h4>&#9888;&#65039; Emergency Contact</h4>
-            <ul>
-                <li>Site Manager: (803) 555-0100</li>
-                <li>Emergency: 911</li>
-            </ul>
-        `
+        rules: {
+            en: `<h4>&#129514; PPE Requirements</h4><ul><li>Hard hat required in all operational areas</li><li>Steel-toed boots required</li><li>High-visibility vest required</li><li>Safety glasses required</li></ul><h4>&#127811; Environmental Rules</h4><ul><li>No discharge of any materials to storm drains</li><li>Report any spills immediately to site manager</li><li>Follow posted dust control procedures</li></ul><h4>&#128664; Traffic &amp; Hazard Zones</h4><ul><li>Maximum speed: 10 MPH on site</li><li>Yield to all heavy equipment</li><li>Stay within marked pedestrian zones</li></ul><h4>&#9888;&#65039; Emergency Contact</h4><ul><li>Site Manager: (803) 555-0100</li><li>Emergency: 911</li></ul>`,
+            es: `<h4>&#129514; Requisitos de EPP</h4><ul><li>Casco requerido en todas las áreas operacionales</li><li>Botas con punta de acero requeridas</li><li>Chaleco de alta visibilidad requerido</li><li>Lentes de seguridad requeridos</li></ul><h4>&#127811; Reglas Ambientales</h4><ul><li>No descargue materiales en los desagües pluviales</li><li>Reporte cualquier derrame inmediatamente al gerente del sitio</li><li>Siga los procedimientos de control de polvo publicados</li></ul><h4>&#128664; Tráfico y Zonas de Peligro</h4><ul><li>Velocidad máxima: 10 MPH en el sitio</li><li>Ceda el paso a todo equipo pesado</li><li>Permanezca dentro de las zonas peatonales marcadas</li></ul><h4>&#9888;&#65039; Contacto de Emergencia</h4><ul><li>Gerente del Sitio: (803) 555-0100</li><li>Emergencia: 911</li></ul>`
+        }
     },
     'AUGUSTA01': {
         name: 'Augusta Yard',
         address: 'Augusta, GA',
-        rules: `
-            <h4>&#129514; PPE Requirements</h4>
-            <ul>
-                <li>Hard hat required in all operational areas</li>
-                <li>Steel-toed boots required</li>
-                <li>High-visibility vest required</li>
-                <li>Hearing protection in marked zones</li>
-            </ul>
-            <h4>&#127811; Environmental Rules</h4>
-            <ul>
-                <li>All containers must be properly labeled</li>
-                <li>No open burning permitted</li>
-                <li>Report any environmental concerns to site manager</li>
-            </ul>
-            <h4>&#128664; Traffic &amp; Hazard Zones</h4>
-            <ul>
-                <li>Maximum speed: 10 MPH on site</li>
-                <li>One-way traffic flow - follow posted signs</li>
-                <li>No pedestrian access to shredder area</li>
-            </ul>
-            <h4>&#9888;&#65039; Emergency Contact</h4>
-            <ul>
-                <li>Site Manager: (706) 555-0200</li>
-                <li>Emergency: 911</li>
-            </ul>
-        `
+        rules: {
+            en: `<h4>&#129514; PPE Requirements</h4><ul><li>Hard hat required in all operational areas</li><li>Steel-toed boots required</li><li>High-visibility vest required</li><li>Hearing protection in marked zones</li></ul><h4>&#127811; Environmental Rules</h4><ul><li>All containers must be properly labeled</li><li>No open burning permitted</li><li>Report any environmental concerns to site manager</li></ul><h4>&#128664; Traffic &amp; Hazard Zones</h4><ul><li>Maximum speed: 10 MPH on site</li><li>One-way traffic flow - follow posted signs</li><li>No pedestrian access to shredder area</li></ul><h4>&#9888;&#65039; Emergency Contact</h4><ul><li>Site Manager: (706) 555-0200</li><li>Emergency: 911</li></ul>`,
+            es: `<h4>&#129514; Requisitos de EPP</h4><ul><li>Casco requerido en todas las áreas operacionales</li><li>Botas con punta de acero requeridas</li><li>Chaleco de alta visibilidad requerido</li><li>Protección auditiva en zonas marcadas</li></ul><h4>&#127811; Reglas Ambientales</h4><ul><li>Todos los contenedores deben estar debidamente etiquetados</li><li>No se permite quema al aire libre</li><li>Reporte cualquier preocupación ambiental al gerente del sitio</li></ul><h4>&#128664; Tráfico y Zonas de Peligro</h4><ul><li>Velocidad máxima: 10 MPH en el sitio</li><li>Flujo de tráfico en un solo sentido - siga las señales</li><li>Sin acceso peatonal al área de la trituradora</li></ul><h4>&#9888;&#65039; Contacto de Emergencia</h4><ul><li>Gerente del Sitio: (706) 555-0200</li><li>Emergencia: 911</li></ul>`
+        }
     },
     'MACON01': {
         name: 'Macon Yard',
         address: 'Macon, GA',
-        rules: `
-            <h4>&#129514; PPE Requirements</h4>
-            <ul>
-                <li>Hard hat required in all operational areas</li>
-                <li>Steel-toed boots required</li>
-                <li>High-visibility vest required</li>
-            </ul>
-            <h4>&#127811; Environmental Rules</h4>
-            <ul>
-                <li>Stormwater BMPs must be maintained</li>
-                <li>No idling over 5 minutes</li>
-                <li>Report any fluid leaks immediately</li>
-            </ul>
-            <h4>&#128664; Traffic &amp; Hazard Zones</h4>
-            <ul>
-                <li>Maximum speed: 10 MPH on site</li>
-                <li>Check in at scale house before proceeding</li>
-            </ul>
-            <h4>&#9888;&#65039; Emergency Contact</h4>
-            <ul>
-                <li>Site Manager: (478) 555-0300</li>
-                <li>Emergency: 911</li>
-            </ul>
-        `
+        rules: {
+            en: `<h4>&#129514; PPE Requirements</h4><ul><li>Hard hat required in all operational areas</li><li>Steel-toed boots required</li><li>High-visibility vest required</li></ul><h4>&#127811; Environmental Rules</h4><ul><li>Stormwater BMPs must be maintained</li><li>No idling over 5 minutes</li><li>Report any fluid leaks immediately</li></ul><h4>&#128664; Traffic &amp; Hazard Zones</h4><ul><li>Maximum speed: 10 MPH on site</li><li>Check in at scale house before proceeding</li></ul><h4>&#9888;&#65039; Emergency Contact</h4><ul><li>Site Manager: (478) 555-0300</li><li>Emergency: 911</li></ul>`,
+            es: `<h4>&#129514; Requisitos de EPP</h4><ul><li>Casco requerido en todas las áreas operacionales</li><li>Botas con punta de acero requeridas</li><li>Chaleco de alta visibilidad requerido</li></ul><h4>&#127811; Reglas Ambientales</h4><ul><li>Las BMPs de aguas pluviales deben mantenerse</li><li>No se permite ralentí por más de 5 minutos</li><li>Reporte cualquier fuga de fluidos inmediatamente</li></ul><h4>&#128664; Tráfico y Zonas de Peligro</h4><ul><li>Velocidad máxima: 10 MPH en el sitio</li><li>Regístrese en la caseta de la báscula antes de continuar</li></ul><h4>&#9888;&#65039; Contacto de Emergencia</h4><ul><li>Gerente del Sitio: (478) 555-0300</li><li>Emergencia: 911</li></ul>`
+        }
     }
 };
 
@@ -839,9 +731,10 @@ const SITES = {
 const TRAINING_SECTIONS = [
     {
         id: 'core-safety',
-        title: 'Core Safety Principles',
-        checkboxLabel: 'I have read and understand the Core Safety Principles.',
-        content: `
+        title: { en: 'Core Safety Principles', es: 'Principios Fundamentales de Seguridad' },
+        checkboxLabel: { en: 'I have read and understand the Core Safety Principles.', es: 'He leído y entiendo los Principios Fundamentales de Seguridad.' },
+        content: {
+            en: `
             <h4>Responsibility</h4>
             <ul>
                 <li>Scrap processing is dangerous &mdash; never underestimate the size and power of equipment</li>
@@ -862,14 +755,37 @@ const TRAINING_SECTIONS = [
             <ul>
                 <li>You must be fit for duty &mdash; not mentally or physically impaired</li>
                 <li>Impairments may include physical illness, substance abuse, fatigue, or stress</li>
+            </ul>`,
+            es: `
+            <h4>Responsabilidad</h4>
+            <ul>
+                <li>El procesamiento de chatarra es peligroso &mdash; nunca subestime el tamaño y la potencia del equipo</li>
+                <li>Los accidentes pueden ser graves o fatales; usted es el factor más importante en la seguridad de la planta</li>
+                <li>Siga todas las reglas de seguridad y tome las precauciones necesarias en todo momento</li>
+                <li>Cada persona es responsable de su propia seguridad y la de sus compañeros</li>
+                <li>Si no está seguro sobre un trabajo, llame a su supervisor para aclaraciones antes de comenzar</li>
+                <li>La falta intencional de cumplimiento de seguridad resultará en acción disciplinaria hasta e incluyendo la terminación</li>
             </ul>
-        `
+            <h4>Prevención de Accidentes</h4>
+            <ul>
+                <li>Nunca tome acciones que creen peligro inmediato para usted o para otros</li>
+                <li>Usted es responsable de reconocer condiciones inseguras &mdash; corríjalas si es posible o repórtelas al supervisor</li>
+                <li>No ingrese a áreas ni opere equipos a menos que esté capacitado y autorizado</li>
+                <li>Algunas áreas presentan peligros severos sin precauciones específicas</li>
+            </ul>
+            <h4>Aptitud para el Trabajo</h4>
+            <ul>
+                <li>Debe estar apto para el trabajo &mdash; sin impedimentos mentales o físicos</li>
+                <li>Los impedimentos pueden incluir enfermedad física, abuso de sustancias, fatiga o estrés</li>
+            </ul>`
+        }
     },
     {
         id: 'emergency-response',
-        title: 'Emergency Response',
-        checkboxLabel: 'I have read and understand the Emergency Response procedures.',
-        content: `
+        title: { en: 'Emergency Response', es: 'Respuesta de Emergencia' },
+        checkboxLabel: { en: 'I have read and understand the Emergency Response procedures.', es: 'He leído y entiendo los procedimientos de Respuesta de Emergencia.' },
+        content: {
+            en: `
             <h4>Emergency Procedures</h4>
             <ul>
                 <li>In case of fire, medical, or other emergency &mdash; contact supervisor/manager or other employees immediately</li>
@@ -886,14 +802,33 @@ const TRAINING_SECTIONS = [
                 <li>All equipment damage must be immediately reported</li>
                 <li>Unsafe equipment must be taken out of service</li>
                 <li>For vendor/contractor incidents: provide a detailed report including root cause(s) and corrective actions to prevent recurrence</li>
+            </ul>`,
+            es: `
+            <h4>Procedimientos de Emergencia</h4>
+            <ul>
+                <li>En caso de incendio, emergencia médica u otra &mdash; contacte al supervisor/gerente u otros empleados inmediatamente</li>
+                <li>La comunicación por radio señala evacuación; diríjase al área de reunión designada</li>
+                <li>No bloquee la entrada &mdash; los vehículos de emergencia necesitan acceso</li>
+                <li>Hay botiquines de primeros auxilios y DEA disponibles; la mayoría de los sitios tienen personal capacitado</li>
+                <li>Conozca su área de evacuación antes de comenzar cualquier actividad en el sitio</li>
+                <li>Los visitantes y consultores deben permanecer con su contacto del sitio durante emergencias</li>
+                <li>NO abandone el sitio sin hacer un reporte</li>
             </ul>
-        `
+            <h4>Reporte de Lesiones e Incidentes</h4>
+            <ul>
+                <li>Todas las lesiones, sin importar la gravedad, deben reportarse a su supervisor inmediatamente</li>
+                <li>Todo daño a equipos debe reportarse inmediatamente</li>
+                <li>Los equipos inseguros deben sacarse de servicio</li>
+                <li>Para incidentes de contratistas: proporcione un reporte detallado incluyendo causa(s) raíz y acciones correctivas</li>
+            </ul>`
+        }
     },
     {
         id: 'equipment-machinery',
-        title: 'Equipment &amp; Machinery Safety',
-        checkboxLabel: 'I have read and understand the Equipment & Machinery Safety requirements.',
-        content: `
+        title: { en: 'Equipment &amp; Machinery Safety', es: 'Seguridad de Equipos y Maquinaria' },
+        checkboxLabel: { en: 'I have read and understand the Equipment & Machinery Safety requirements.', es: 'He leído y entiendo los requisitos de Seguridad de Equipos y Maquinaria.' },
+        content: {
+            en: `
             <h4>Machine &amp; Conveyor Safety</h4>
             <ul>
                 <li>Keep hands, legs, and body parts out of machine hazard areas (conveyor rollers, chains)</li>
@@ -936,14 +871,59 @@ const TRAINING_SECTIONS = [
                 <li>Use proper protective lens and face protection</li>
                 <li>Inspect equipment before use; repair or replace damaged equipment</li>
                 <li>Secure cylinders and replace caps when not in use</li>
+            </ul>`,
+            es: `
+            <h4>Seguridad de Máquinas y Transportadores</h4>
+            <ul>
+                <li>Mantenga manos, piernas y partes del cuerpo fuera de áreas peligrosas de máquinas (rodillos, cadenas)</li>
+                <li>Bloquee el equipo antes de limpieza, ajuste o mantenimiento</li>
+                <li>Mantenga las protecciones en su lugar cuando el equipo esté operando</li>
+                <li>Nunca ingrese a áreas de máquinas y transportadores sin estar capacitado y autorizado</li>
+                <li>No use ropa suelta o joyería cerca de maquinaria en movimiento/rotación</li>
+                <li>El cabello largo debe estar recogido o cubierto</li>
             </ul>
-        `
+            <h4>Procedimientos de Bloqueo</h4>
+            <ul>
+                <li>Los transportadores y máquinas pueden causar amputaciones o lesiones fatales &mdash; el bloqueo es esencial</li>
+                <li>Requerido al limpiar, ajustar o reparar maquinaria que podría causar lesiones si se activa accidentalmente</li>
+                <li>Cada persona expuesta al peligro debe colocar su candado individual en la fuente de energía</li>
+                <li>Solo la persona que colocó el candado puede retirarlo</li>
+                <li>Verifique que la máquina esté despejada antes de reiniciar después del bloqueo</li>
+            </ul>
+            <h4>Operación de Equipo Móvil</h4>
+            <ul>
+                <li>No opere equipo inseguro &mdash; inspeccione todo el equipo antes de operar</li>
+                <li>Presente el reporte de inspección al inicio de cada turno</li>
+                <li>Reporte daños o problemas de seguridad inmediatamente</li>
+                <li>Mantenga el compartimiento del motor limpio y libre de material combustible</li>
+                <li>Todo equipo móvil debe tener un extintor completamente cargado</li>
+                <li>Nunca levante chatarra o cargas inestables sobre personas</li>
+                <li>Nunca opere maquinaria sin la Licencia de Operador correspondiente</li>
+                <li>No exceda los límites de carga o los límites seguros de operación</li>
+            </ul>
+            <h4>Herramientas Manuales y Eléctricas</h4>
+            <ul>
+                <li>Inspeccione todas las herramientas antes de usar; las dañadas o defectuosas deben repararse o descartarse</li>
+                <li>Use la herramienta correcta para el trabajo</li>
+                <li>Se requiere careta al usar esmeriladoras eléctricas</li>
+                <li>Tenga cuidado al usar herramientas de pilas de chatarra</li>
+            </ul>
+            <h4>Soldadura y Corte</h4>
+            <ul>
+                <li>Debe haber un extintor disponible al soldar o cortar</li>
+                <li>Sepa dónde caerán las chispas y la escoria; moje las áreas y/o tenga un vigía de fuego</li>
+                <li>Use lentes protectores y protección facial adecuados</li>
+                <li>Inspeccione el equipo antes de usar; repare o reemplace el equipo dañado</li>
+                <li>Asegure los cilindros y reemplace las tapas cuando no estén en uso</li>
+            </ul>`
+        }
     },
     {
         id: 'yard-hazards',
-        title: 'Yard &amp; Mobile Equipment Hazards',
-        checkboxLabel: 'I have read and understand the Yard & Mobile Equipment Hazards.',
-        content: `
+        title: { en: 'Yard &amp; Mobile Equipment Hazards', es: 'Peligros del Patio y Equipo Móvil' },
+        checkboxLabel: { en: 'I have read and understand the Yard & Mobile Equipment Hazards.', es: 'He leído y entiendo los Peligros del Patio y Equipo Móvil.' },
+        content: {
+            en: `
             <h4>Working in a Scrap Yard</h4>
             <ul>
                 <li>Traffic, weather, heavy equipment, potholes, dirt, and scrap are common hazards</li>
@@ -977,14 +957,50 @@ const TRAINING_SECTIONS = [
                 <li>Always watch where you are walking</li>
                 <li>Metal, mud, and ice are common hazards</li>
                 <li>Keep walkways and stairs clear</li>
+            </ul>`,
+            es: `
+            <h4>Trabajo en un Patio de Chatarra</h4>
+            <ul>
+                <li>El tráfico, el clima, el equipo pesado, los baches, la tierra y la chatarra son peligros comunes</li>
+                <li>Siempre piense en dónde está, qué sucede a su alrededor y sobre qué está caminando</li>
+                <li>Los resbalones y torceduras de tobillo son comunes &mdash; tenga cuidado dónde camina y pisa</li>
+                <li>El metal aceitoso puede ser más resbaloso que el hielo</li>
             </ul>
-        `
+            <h4>Trabajo Cerca de Camiones, Grúas y Cargadores</h4>
+            <ul>
+                <li>Mantenga distancia segura de camiones, grúas, cargadores y otro equipo móvil</li>
+                <li>Permanezca visible para el operador en todo momento</li>
+                <li>No camine en el área de operación sin señal de aprobación del operador</li>
+                <li>Esté atento a los puntos ciegos del operador (ej: lado del brazo de la grúa &mdash; el operador no puede verlo)</li>
+                <li>Nunca camine bajo un cucharón elevado, carga elevada o cerca de la parte trasera de un camión cargado</li>
+                <li>Use chaleco de alta visibilidad al trabajar en caminos, patios o áreas con tráfico de camiones</li>
+                <li>Manténgase alejado de camiones descargando &mdash; pueden moverse repentinamente hacia adelante o volcarse</li>
+            </ul>
+            <h4>Trabajo Sobre el Agua</h4>
+            <ul>
+                <li>Use chaleco salvavidas cuando trabaje en un área donde pueda caer al agua</li>
+                <li>Hay aros salvavidas a lo largo de todas las áreas de muelle</li>
+                <li>Asegúrese de que alguien pueda verlo o sepa dónde está en caso de rescate</li>
+            </ul>
+            <h4>Vagones de Tren</h4>
+            <ul>
+                <li>Nunca camine entre vagones de tren &mdash; si se mueven podría resultar gravemente herido o muerto</li>
+                <li>Manténgase alejado de las vías cuando los vagones estén siendo movidos</li>
+            </ul>
+            <h4>Resbalones y Tropiezos</h4>
+            <ul>
+                <li>Siempre observe por dónde camina</li>
+                <li>El metal, el lodo y el hielo son peligros comunes</li>
+                <li>Mantenga pasillos y escaleras despejados</li>
+            </ul>`
+        }
     },
     {
         id: 'ppe-fall-safety',
-        title: 'PPE &amp; Fall Safety',
-        checkboxLabel: 'I have read and understand the PPE & Fall Safety requirements.',
-        content: `
+        title: { en: 'PPE &amp; Fall Safety', es: 'EPP y Seguridad contra Caídas' },
+        checkboxLabel: { en: 'I have read and understand the PPE & Fall Safety requirements.', es: 'He leído y entiendo los requisitos de EPP y Seguridad contra Caídas.' },
+        content: {
+            en: `
             <h4>Personal Protective Equipment</h4>
             <ul>
                 <li><strong>Minimum required:</strong> Hard hat, safety glasses, safety shoes, long pants</li>
@@ -1006,14 +1022,38 @@ const TRAINING_SECTIONS = [
                 <li>Always have two hands free when climbing ladders</li>
                 <li>Ladder must be stable and secure; inspect ladders before use</li>
                 <li>Aerial lifts require use of harness and lanyard</li>
+            </ul>`,
+            es: `
+            <h4>Equipo de Protección Personal</h4>
+            <ul>
+                <li><strong>Mínimo requerido:</strong> Casco, lentes de seguridad, zapatos de seguridad, pantalones largos</li>
+                <li>Guantes requeridos al manejar objetos filosos, calor o químicos</li>
+                <li>Mascarillas disponibles para protección contra polvo y suciedad</li>
+                <li>Use tapones para los oídos en áreas ruidosas &mdash; asegúrese de que manos, oídos y tapones estén limpios antes de insertarlos</li>
+                <li>El esmerilado y la soldadura requieren protección facial adicional con careta</li>
+                <li>Contacte al Departamento de Salud y Seguridad sobre programas de zapatos y lentes de seguridad con prescripción</li>
             </ul>
-        `
+            <h4>Levantamiento Manual y Manejo de Materiales</h4>
+            <ul>
+                <li>No se lastime la espalda tratando de levantar o mover material pesado</li>
+                <li>Pida ayuda o use un montacargas, cargador u otro equipo para cargas pesadas</li>
+            </ul>
+            <h4>Prevención de Caídas</h4>
+            <ul>
+                <li>Use escaleras, barandillas y pasarelas al hacer trabajo en altura</li>
+                <li>Cuando un área elevada no tenga barandilla y buena superficie de trabajo, use plataforma elevadora, arnés o protección contra caídas</li>
+                <li>Siempre tenga las dos manos libres al subir escaleras</li>
+                <li>La escalera debe ser estable y segura; inspeccione las escaleras antes de usarlas</li>
+                <li>Las plataformas aéreas requieren uso de arnés y línea de vida</li>
+            </ul>`
+        }
     },
     {
         id: 'specialized-hazards',
-        title: 'Specialized Hazards',
-        checkboxLabel: 'I have read and understand the Specialized Hazards information.',
-        content: `
+        title: { en: 'Specialized Hazards', es: 'Peligros Especializados' },
+        checkboxLabel: { en: 'I have read and understand the Specialized Hazards information.', es: 'He leído y entiendo la información de Peligros Especializados.' },
+        content: {
+            en: `
             <h4>Chemical Hazards</h4>
             <ul>
                 <li>Oils, lubricants, and fuels present fire hazard and may cause skin, eye, and respiratory irritation</li>
@@ -1037,14 +1077,40 @@ const TRAINING_SECTIONS = [
                 <li>Torch cutting of painted steel can result in exposure to lead from lead-based paint</li>
                 <li>Rules for working in these areas are in the company Lead Program</li>
                 <li>Contact the Health &amp; Safety Department for additional information</li>
+            </ul>`,
+            es: `
+            <h4>Peligros Químicos</h4>
+            <ul>
+                <li>Aceites, lubricantes y combustibles presentan riesgo de incendio y pueden causar irritación de piel, ojos y vías respiratorias</li>
+                <li>Evite contacto prolongado; use guantes y lávese las manos</li>
+                <li>Los productos de soldadura presentan riesgo de inhalación &mdash; manténgase fuera de la columna de humo</li>
+                <li>La sobreexposición a químicos de varillas de soldadura puede causar efectos de salud a corto y largo plazo</li>
+                <li>Los cilindros de gas comprimido pueden estar bajo miles de libras de presión o contener gases inflamables &mdash; asegure y almacene correctamente todos los cilindros</li>
+                <li>Los químicos incluyendo varillas de soldadura y cilindros de gas están etiquetados con información de peligros</li>
+                <li>Las Hojas de Datos de Seguridad (HDS) están disponibles en el Departamento de Salud y Seguridad</li>
+                <li>Los contenedores de químicos en material de chatarra de proveedores deberían estar vacíos pero pueden contener material residual &mdash; reporte contenedores sospechosos</li>
             </ul>
-        `
+            <h4>Espacios Confinados</h4>
+            <ul>
+                <li>Los espacios confinados incluyen tanques, fosos, alcantarillas y ciclones</li>
+                <li>No están diseñados para que las personas entren de forma segura sin precauciones especiales</li>
+                <li>Pueden contener peligros que no son fáciles de ver</li>
+                <li>Contacte al Departamento de Salud y Seguridad para asistencia antes de entrar</li>
+            </ul>
+            <h4>Plomo</h4>
+            <ul>
+                <li>El corte con soplete de acero pintado puede resultar en exposición al plomo de pintura a base de plomo</li>
+                <li>Las reglas para trabajar en estas áreas están en el Programa de Plomo de la empresa</li>
+                <li>Contacte al Departamento de Salud y Seguridad para información adicional</li>
+            </ul>`
+        }
     },
     {
         id: 'environmental-expectations',
-        title: 'Environmental Expectations',
-        checkboxLabel: 'I have read and understand the Environmental Expectations.',
-        content: `
+        title: { en: 'Environmental Expectations', es: 'Expectativas Ambientales' },
+        checkboxLabel: { en: 'I have read and understand the Environmental Expectations.', es: 'He leído y entiendo las Expectativas Ambientales.' },
+        content: {
+            en: `
             <h4>Our Commitment &mdash; The 3 C&rsquo;s</h4>
             <ul>
                 <li><strong>Commitment:</strong> Sustainability is a core value &mdash; integrated into action through an Environmental Management System</li>
@@ -1086,8 +1152,51 @@ const TRAINING_SECTIONS = [
             </ul>
             <p style="text-align:center;font-weight:600;color:#1a5632;margin-top:12px;padding:8px;background:#f0f7f2;border-radius:6px;">
                 Please support our environmental intentions as we work together.
-            </p>
-        `
+            </p>`,
+            es: `
+            <h4>Nuestro Compromiso &mdash; Las 3 C</h4>
+            <ul>
+                <li><strong>Compromiso:</strong> La sostenibilidad es un valor fundamental &mdash; integrado en la acción a través de un Sistema de Gestión Ambiental</li>
+                <li><strong>Cumplimiento:</strong> Todos los contratistas y proveedores deben cumplir con las leyes ambientales aplicables, regulaciones y estándares de la empresa mientras estén en el sitio</li>
+                <li><strong>Conservación:</strong> Reducir impactos ambientales y conservar recursos naturales &mdash; minimizar consumo de energía, emisiones al aire y generación de residuos</li>
+            </ul>
+            <h4>Eliminación de Residuos</h4>
+            <ul>
+                <li>Toda eliminación de residuos debe ser revisada con el contacto del sitio y el Gerente Ambiental</li>
+                <li>Se requiere aprobación individual para cada eliminación</li>
+            </ul>
+            <h4>Orden y Limpieza</h4>
+            <ul>
+                <li>Siga buenas prácticas de orden y limpieza para prevenir lesiones, incendios y derrames</li>
+                <li>Se requiere limpieza diaria en todas las áreas de trabajo antes de salir del sitio</li>
+            </ul>
+            <h4>Respuesta a Derrames</h4>
+            <ul>
+                <li>Los derrames de aceite o químicos requieren notificación inmediata a su contacto del sitio</li>
+                <li>Contenga o detenga el flujo del derrame de forma segura si es posible; espere a que llegue ayuda</li>
+            </ul>
+            <h4>Gestión de Químicos</h4>
+            <ul>
+                <li>Todos los químicos deben ser aprobados por los representantes locales de Salud y Seguridad Ambiental</li>
+                <li>Las Hojas de Datos de Seguridad (HDS) deben estar archivadas antes de traer químicos al sitio</li>
+            </ul>
+            <h4>Control de Fuentes</h4>
+            <ul>
+                <li>Los requisitos de control de fuentes deben seguirse al traer material al sitio</li>
+                <li>Lea la señalización y consulte con su contacto del sitio para requisitos escritos</li>
+            </ul>
+            <h4>Procedimientos de Emergencia</h4>
+            <ul>
+                <li>Conozca su área de evacuación antes de comenzar actividades en el sitio</li>
+                <li>Si le dicen que evacúe: permanezca con su contacto del sitio y diríjase al área de reunión designada</li>
+                <li>Contacte a su contacto del sitio inmediatamente para notificarle de cualquier emergencia</li>
+                <li>NO abandone el sitio sin hacer un reporte</li>
+                <li>Proporcione un reporte detallado del incidente incluyendo causa(s) raíz y acciones correctivas</li>
+            </ul>
+            <p style="text-align:center;font-weight:600;color:#1a5632;margin-top:12px;padding:8px;background:#f0f7f2;border-radius:6px;">
+                Por favor apoye nuestras intenciones ambientales mientras trabajamos juntos.
+            </p>`
+        }
     }
 ];
 
@@ -1297,33 +1406,46 @@ function proceedToTraining() {
 // ============================================================
 // RENDER STEPS
 // ============================================================
+function getLangText(val) {
+    if (typeof val === 'object' && val !== null) return val[currentLang] || val['en'] || '';
+    return val || '';
+}
+
 function renderSteps() {
     var container = document.getElementById('stepsContainer');
     var html = '';
     var nextStep = 1;
 
     // Step 1: Site-specific requirements
-    html += buildStepHTML(nextStep, 'Site Safety Requirements', currentSite.rules,
-        'I have read and understand the site-specific safety requirements for ' + currentSite.name + '.');
+    var siteRulesTitle = currentLang === 'es' ? 'Requisitos de Seguridad del Sitio' : 'Site Safety Requirements';
+    var siteRulesCheck = currentLang === 'es'
+        ? 'He leído y entiendo los requisitos de seguridad específicos del sitio para ' + currentSite.name + '.'
+        : 'I have read and understand the site-specific safety requirements for ' + currentSite.name + '.';
+    var siteRules = getLangText(currentSite.rules);
+    html += buildStepHTML(nextStep, siteRulesTitle, siteRules, siteRulesCheck);
     nextStep++;
 
     // Step 2: Evacuation Map & Rally Points (if site has one)
     if (currentSite.evacuationMap) {
+        var evacTitle = currentLang === 'es' ? 'Mapa de Evacuación y Puntos de Reunión' : 'Evacuation Map & Rally Points';
+        var evacCheck = currentLang === 'es'
+            ? 'He revisado el mapa de evacuación y sé dónde están los puntos de reunión.'
+            : 'I have reviewed the evacuation map and know where the rally points are located.';
+        var zoomHint = currentLang === 'es' ? 'Toque el mapa para acercar/alejar' : 'Tap map to zoom in/out';
         var mapContent = '<div class="evac-map-wrap" onclick="this.classList.toggle(\'zoomed\')">' +
-            '<div class="evac-map-label">&#127987; EVACUATION MAP &mdash; ' + currentSite.name.toUpperCase() + '</div>' +
+            '<div class="evac-map-label">&#127987; ' + (currentLang === 'es' ? 'MAPA DE EVACUACIÓN' : 'EVACUATION MAP') + ' &mdash; ' + currentSite.name.toUpperCase() + '</div>' +
             '<img src="' + currentSite.evacuationMap + '" alt="Evacuation map for ' + currentSite.name + '">' +
             '</div>' +
-            '<div class="zoom-hint">Tap map to zoom in/out</div>' +
-            (currentSite.rallyPoints || '');
-        html += buildStepHTML(nextStep, 'Evacuation Map & Rally Points', mapContent,
-            'I have reviewed the evacuation map and know where the rally points are located.');
+            '<div class="zoom-hint">' + zoomHint + '</div>' +
+            getLangText(currentSite.rallyPoints);
+        html += buildStepHTML(nextStep, evacTitle, mapContent, evacCheck);
         nextStep++;
     }
 
     // Remaining steps: Corporate training sections
     for (var i = 0; i < TRAINING_SECTIONS.length; i++) {
         var sec = TRAINING_SECTIONS[i];
-        html += buildStepHTML(nextStep, sec.title, sec.content, sec.checkboxLabel);
+        html += buildStepHTML(nextStep, getLangText(sec.title), getLangText(sec.content), getLangText(sec.checkboxLabel));
         nextStep++;
     }
 
